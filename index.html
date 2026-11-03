@@ -69,52 +69,34 @@ ul.dlist li{margin:2px 0}
 <div class="htitle"><h1>🎙️ Zoe Lay AI Agent</h1></div>
 <div class="hspacer"></div>
 </div>
-<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V2.0</p>
+<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V3.0</p>
 </header>
 <div id="overlay"></div>
 <aside id="drawer">
 <div class="dhead">
 <div class="davatar">🎙️</div>
-<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V1.5</p></div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V3.0</p></div>
 <button id="closeDrawer">✕</button>
 </div>
 <section class="dsec">
-<h3>⚙️ Settings</h3>
-<div class="drow" style="display:block"><span>AI ဦးနှောက် ရွေးပါ</span><select id="providerSel" style="margin-top:8px"><option value="pollinations">Pollinations (အခမဲ့, key မလို)</option><option value="claude">Muse / Claude (key လို, ပေးဆောင်ရ)</option></select></div>
-<div class="drow" style="display:block" id="claudeKeyRow"><span>Claude API Key (ဖုန်းထဲမှာပဲ သိမ်းမယ်)</span><input id="claudeKey" type="password" placeholder="sk-ant-..." style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"><br><small>Key ကို website code ထဲမှာ မထည့်ဘူး၊ မင်းဖုန်းရဲ့ browser ထဲမှာပဲ ရှိမယ်။</small></div>
-<div class="drow"><span>အသံနဲ့ပြန်ပြော</span><input type="checkbox" id="autospeak" checked></div>
-<div class="drow"><span>ဆက်တိုက်ပြော (hands-free)</span><input type="checkbox" id="handsfree"></div>
-<div class="drow" style="display:block"><span>အသံ ရွေးပါ</span><select id="voiceSel" style="margin-top:8px"><option value="">အသံ ရွေးနေသည်…</option></select><br><small>ဖုန်းမှာ မြန်မာအသံ မရှိရင် Google မြန်မာအသံနဲ့ အလိုအလျောက် ပြောပေးမယ်။</small></div>
-<div class="drow" style="display:block"><span>အသံမြန်နှုန်း: <b id="rateVal">1.0</b></span><input type="range" id="rateSel" min="0.8" max="1.3" step="0.1" value="1" style="margin-top:8px"></div>
-<div class="drow" style="display:block"><span>စာလုံးအရွယ်</span><select id="fontSel" style="margin-top:8px"><option value="normal">ပုံမှန်</option><option value="small">သေး</option><option value="large">ကြီး</option></select></div>
+<h3>🧠 AI</h3>
+<div class="drow" style="display:block"><span>AI ရွေးပါ</span><select id="providerSel" style="margin-top:8px"><option value="pollinations">Pollinations (အခမဲ့)</option><option value="musefree">Muse အခမဲ့ (Pollinations token လို)</option><option value="claude">Muse / Claude (ဝယ်ရတဲ့ key)</option></select></div>
+<div class="drow" style="display:block" id="pollTokenRow"><span>Pollinations Token (အခမဲ့, ဖုန်းထဲမှာပဲ သိမ်းမယ်)</span><input id="pollTokenEl" type="password" placeholder="enter.pollinations.ai က key" style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"><br><small>card မလိုဘူး — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့်ပြီး key ယူပါ။</small></div>
+<div class="drow" style="display:block" id="claudeKeyRow"><span>Claude API Key</span><input id="claudeKey" type="password" placeholder="sk-ant-..." style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"></div>
 </section>
 <section class="dsec">
-<h3>🎛️ လုပ်ဆောင်ချက်များ</h3>
+<h3>🔊 အသံ</h3>
+<div class="drow"><span>အသံနဲ့ပြန်ပြော</span><input type="checkbox" id="autospeak" checked></div>
+<div class="drow"><span>ဆက်တိုက်ပြော</span><input type="checkbox" id="handsfree"></div>
+<div class="drow" style="display:block"><span>အသံ ရွေးပါ</span><select id="voiceSel" style="margin-top:8px"><option value="">အသံ ရွေးနေသည်…</option></select></div>
+<div class="drow" style="display:block"><span>အသံမြန်နှုန်း: <b id="rateVal">1.0</b></span><input type="range" id="rateSel" min="0.8" max="1.3" step="0.1" value="1" style="margin-top:8px"></div>
 <button class="dbtn" id="testVoiceBtn">🔊 &nbsp;အသံစမ်းကြည့်</button>
 <button class="dbtn" id="stopBtn">⏹ &nbsp;အသံရပ်</button>
+</section>
+<section class="dsec">
+<h3>🖥️ မျက်နှာပြင်</h3>
+<div class="drow" style="display:block"><span>စာလုံးအရွယ်</span><select id="fontSel" style="margin-top:8px"><option value="normal">ပုံမှန်</option><option value="small">သေး</option><option value="large">ကြီး</option></select></div>
 <button class="dbtn" id="clearChatBtn">🗑️ &nbsp;စကားပြောခန်း ရှင်း</button>
-<button class="dbtn" id="clearNotesBtn">🗑️ &nbsp;မှတ်စုတွေ ရှင်း</button>
-</section>
-<section class="dsec">
-<h3>📖 သုံးနည်း</h3>
-<ul class="dlist">
-<li>မိုက်ခရိုဖုန်းနှိပ် → မြန်မာလိုပြော → ထပ်နှိပ်</li>
-<li>အသံမထွက်ရင် “အသံစမ်းကြည့်” အရင်နှိပ်ပါ</li>
-<li>အသံနဲ့မရရင် စာရိုက်ပြီး မေးလို့ရတယ်</li>
-</ul>
-</section>
-<section class="dsec">
-<h3>✨ ဘာလုပ်နိုင်လဲ</h3>
-<ul class="dlist">
-<li>မေးခွန်းဖြေ၊ ရှင်းပြ၊ ဘာသာပြန်၊ စာရေး၊ တွက်ချက်</li>
-<li>အချိန်/နေ့စွဲ ပြော၊ မှတ်စုမှတ်/ပြ၊ ဝဘ်ရှာ၊ သတိပေး</li>
-<li>ဥပမာ: “စျေးဝယ်စာရင်းထဲ ကြက်ဥထည့်ထား”</li>
-</ul>
-<h3 style="margin-top:14px">🚫 မရသေးတာ</h3>
-<ul class="dlist">
-<li>ဖုန်း App ဖွင့်/စာပို့တာ၊ Facebook/Telegram ပို့တာ</li>
-<li>တိုက်ရိုက်ရွှေဈေး/သတင်း — ခန့်မှန်းမဖြေဘဲ မသိဘူးလို့ ပြောမယ်</li>
-</ul>
 </section>
 </aside>
 <main>
@@ -123,6 +105,8 @@ ul.dlist li{margin:2px 0}
 <div class="micwrap">
 <button id="mic" aria-label="အသံနဲ့ပြော">🎤</button>
 <div id="miclabel">မိုက်ခရိုဖုန်းနှိပ်ပြီး ပြောပါ</div>
+<button id="recBtn" style="margin-top:8px;padding:8px 14px;border-radius:999px;border:1px solid #fdba74;background:#ffedd5;font-size:13px">🎙️ အသံဖမ်းပြီး ပို့မယ် (Google mic မရရင်)</button>
+<div id="recLabel" style="font-size:13px;color:#57534e;margin-top:6px"></div>
 </div>
 <div class="chips">
 <button data-q="အခုအချိန်ဘယ်လောက်ရှိပြီလဲ">🕐 အချိန်</button>
@@ -151,9 +135,11 @@ var fontSel=document.getElementById('fontSel');
 var voiceRate=1;
 var savedVoice='';
 var providerSel=document.getElementById('providerSel');
+var pollTokenEl=document.getElementById('pollTokenEl');
+var pollTokenRow=document.getElementById('pollTokenRow');
 var claudeKeyEl=document.getElementById('claudeKey');
 var claudeKeyRow=document.getElementById('claudeKeyRow');
-function updateKeyRow(){if(claudeKeyRow)claudeKeyRow.style.display=(providerSel.value==='claude')?'block':'none';}
+function updateKeyRow(){if(claudeKeyRow)claudeKeyRow.style.display=(providerSel.value==='claude')?'block':'none';if(pollTokenRow)pollTokenRow.style.display=(providerSel.value==='musefree')?'block':'none';}
 try{
   var _s=JSON.parse(localStorage.getItem('zoelay_settings')||'{}');
   if(_s.auto!==undefined)autoSpeak.checked=_s.auto;
@@ -163,11 +149,13 @@ try{
   if(_s.voice)savedVoice=_s.voice;
   if(_s.provider)providerSel.value=_s.provider;
   var _k=localStorage.getItem('zoelay_claude_key')||'';if(_k)claudeKeyEl.value=_k;
+  var _pt=localStorage.getItem('zoelay_poll_token')||'';if(_pt&&pollTokenEl)pollTokenEl.value=_pt;
 }catch(e){}
 updateKeyRow();
 function saveSettings(){
   try{localStorage.setItem('zoelay_settings',JSON.stringify({auto:autoSpeak.checked,hands:handsfree.checked,rate:voiceRate,font:fontSel.value,voice:voiceSel.value,provider:providerSel.value}))}catch(e){}
   try{localStorage.setItem('zoelay_claude_key',claudeKeyEl.value.trim())}catch(e){}
+  try{if(pollTokenEl)localStorage.setItem('zoelay_poll_token',pollTokenEl.value.trim())}catch(e){}
 }
 var history=[];
 var notes=[];
@@ -260,6 +248,7 @@ function startListen(){
   rec=new SR();rec.lang='my-MM';rec.interimResults=true;rec.continuous=false;
   micBtn.classList.add('listening');micLabel.textContent='နားထောင်နေသည်… ထပ်နှိပ်ရင် ရပ်မယ်';
   var finalText='';
+  var errMsg='';
   var done=false;
   var timer1=null,timer2=null;
   function finish(){
@@ -268,7 +257,12 @@ function startListen(){
     micBtn.classList.remove('listening');micLabel.textContent='မိုက်ခရိုဖုန်းနှိပ်ပြီး ပြောပါ';
     curFinish=null;rec=null;
     if(finalText.trim())handleUser(finalText.trim());
-    else addMsg('ai','အသံမကြားရဘူး၊ ထပ်ပြောကြည့်ပါ။');
+    else{
+      var last=chatEl.querySelector('.ai:last-child');
+      var lastTxt=last?last.textContent:'';
+      var msg=errMsg||'အသံမကြားရဘူး၊ ထပ်ပြောကြည့်ပါ။';
+      if(lastTxt.indexOf(msg.slice(0,12))===-1)addMsg('ai',msg);
+    }
   }
   curFinish=function(){
     try{rec.abort()}catch(e){}
@@ -295,8 +289,7 @@ function startListen(){
     else if(e.error==='network')msg='အသံနားထောင်ဖို့ အင်တာနက်လိုတယ် — အင်တာနက်ပျက်နေပုံရတယ်။ စာရိုက်မေးလို့ရတယ်။';
     else if(e.error==='language-not-supported')msg='ဒီဖုန်းမှာ မြန်မာအသံနားထောင်စနစ် မရှိဘူး — စာရိုက်မေးပါ။';
     else msg='အသံနားထောင်တာ အဆင်မပြေဘူး ('+e.error+') — စာရိုက်မေးလို့ရတယ်။';
-    micLabel.textContent=msg;
-    if(!done){addMsg('ai',msg);}
+    micLabel.textContent=msg;errMsg=msg;
     setTimeout(finish,300);
   };
   rec.onend=function(){finish();};
@@ -361,6 +354,22 @@ function handleLocal(q){
 // ---------- Brain: Pollinations (free) or Muse/Claude (local key) ----------
 function askBrain(q){
   var sys='You are Zoe Lay, a friendly Burmese AI assistant. Answer ONLY in Burmese (Myanmar script) unless the user asks in another language. Keep answers voice-friendly and concise: usually 2-4 short sentences, longer only for explanations. If you do not know something, or it needs live prices, live news or live scores, say clearly that you do not have live data and do not invent numbers, dates or results.';
+  if(providerSel.value==='musefree'){
+    var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
+    if(!ptoken){
+      var e2=new Error('no-poll-token');
+      e2.userMessage='Muse အခမဲ့ကို သုံးဖို့ Pollinations Token လိုတယ် — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့် (card မလို), key ယူပြီး ☰ Menu > AI ထဲမှာ ထည့်ပါ။';
+      return Promise.reject(e2);
+    }
+    var mmsgs=[{role:'system',content:sys}];history.slice(-6).forEach(function(h){mmsgs.push(h)});mmsgs.push({role:'user',content:q});
+    return fetch('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:'community/vendouple/muse-glimmer-30b:free',max_tokens:600,messages:mmsgs})})
+    .then(function(r){if(!r.ok)throw new Error('musefree '+r.status);return r.json()})
+    .then(function(j){
+      var t='';try{t=(j.choices[0].message.content||'').trim();}catch(e){}
+      if(!t)throw new Error('empty');
+      return t;
+    });
+  }
   if(providerSel.value==='claude'){
     var key=(claudeKeyEl.value||'').trim();
     if(!key){
@@ -407,6 +416,41 @@ function handleUser(q){
 document.getElementById('send').onclick=function(){var q=textEl.value.trim();handleUser(q)};
 textEl.addEventListener('keydown',function(e){if(e.key==='Enter'){handleUser(textEl.value.trim())}});
 document.querySelectorAll('.chips button').forEach(function(b){b.onclick=function(){handleUser(b.getAttribute('data-q'))}});
+// ---------- Record mode (bypasses Google SpeechRecognition) ----------
+var mediaRec=null, recChunks=[], recording=false;
+var recBtn=document.getElementById('recBtn');
+var recLabel=document.getElementById('recLabel');
+function stopRecording(){
+  if(mediaRec&&recording){try{mediaRec.stop()}catch(e){}recording=false;recBtn.textContent='🎙️ အသံဖမ်းပြီး ပို့မယ် (Google mic မရရင်)';}
+}
+if(recBtn){
+recBtn.onclick=function(){
+  if(recording){stopRecording();return;}
+  var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
+  if(!ptoken){addMsg('ai','အသံဖမ်းပြီး စာပြောင်းဖို့ Pollinations Token လိုတယ် — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့်ပြီး key ယူပါ၊ ☰ Menu > AI ထဲမှာ ထည့်ပါ။');return;}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){addMsg('ai','ဒီ browser မှာ အသံဖမ်းလို့မရဘူး — စာရိုက်မေးပါ။');return;}
+  navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+    recChunks=[];recording=true;recBtn.textContent='⏹ ဖမ်းနေသည်… ထပ်နှိပ်ရင် ရပ်မယ်';recLabel.textContent='ပြောနေသည်…';
+    try{mediaRec=new MediaRecorder(stream,{mimeType:'audio/webm'});}catch(e){mediaRec=new MediaRecorder(stream);}
+    mediaRec.ondataavailable=function(e){if(e.data.size)recChunks.push(e.data);};
+    mediaRec.onstop=function(){
+      stream.getTracks().forEach(function(t){t.stop();});
+      recLabel.textContent='စာပြောင်းနေသည်…';
+      var blob=new Blob(recChunks,{type:'audio/webm'});
+      var fd=new FormData();fd.append('file',blob,'voice.webm');fd.append('model','openai/whisper-large-v3');
+      fetch('https://gen.pollinations.ai/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+ptoken},body:fd})
+      .then(function(r){if(!r.ok)throw new Error('transcribe '+r.status);return r.json()})
+      .then(function(j){
+        var txt=(j.text||'').trim();recLabel.textContent='';
+        if(txt)handleUser(txt);
+        else addMsg('ai','အသံဖမ်းတာက စာမထွက်ဘူး၊ ထပ်ဖမ်းကြည့်ပါ။');
+      })
+      .catch(function(){recLabel.textContent='';addMsg('ai','အသံဖမ်းပြီး စာပြောင်းမရဘူး — Token စစ်ပါ၊ ဒါမှမဟုတ် စာရိုက်မေးပါ။');});
+    };
+    mediaRec.start();
+  }).catch(function(){addMsg('ai','မိုက်ခရိုဖုန်း ခွင့်မပြုသေးဘူး — Allow လုပ်ပေးပါ။');});
+};
+}
 // ---------- Drawer + Settings ----------
 function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('show');}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('show');}
@@ -416,10 +460,10 @@ document.getElementById('overlay').onclick=closeDrawer;
 autoSpeak.onchange=saveSettings;handsfree.onchange=saveSettings;voiceSel.onchange=saveSettings;
 providerSel.onchange=function(){updateKeyRow();saveSettings();};
 claudeKeyEl.onchange=saveSettings;claudeKeyEl.oninput=saveSettings;
+if(pollTokenEl){pollTokenEl.onchange=saveSettings;pollTokenEl.oninput=saveSettings;}
 rateSel.oninput=function(){voiceRate=parseFloat(rateSel.value);rateVal.textContent=rateSel.value;saveSettings();};
 fontSel.onchange=function(){document.body.classList.remove('font-small','font-large');if(fontSel.value!=='normal')document.body.classList.add('font-'+fontSel.value);saveSettings();};
 document.getElementById('clearChatBtn').onclick=function(){chatEl.innerHTML='';addMsg('ai','မင်္ဂလာပါ။ မိုက်ခရိုဖုန်းနှိပ်ပြီး ပြောပါ။');closeDrawer();};
-document.getElementById('clearNotesBtn').onclick=function(){notes=[];saveNotes();addMsg('ai','မှတ်စုတွေအားလုံး ရှင်းလိုက်ပြီ။');closeDrawer();};
 </script>
 </body>
 </html>
