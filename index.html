@@ -163,8 +163,16 @@ micBtn.onclick=function(){if(micBtn.classList.contains('listening')){try{rec.sto
 var MY={'၀':'0','၁':'1','၂':'2','၃':'3','၄':'4','၅':'5','၆':'6','၇':'7','၈':'8','၉':'9'};
 function toArabic(s){return s.replace(/[၀-၉]/g,function(c){return MY[c]})}
 function yangonNow(){
-  try{return new Date().toLocaleString('my-MM',{timeZone:'Asia/Yangon',weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'numeric'})}
-  catch(e){return new Date().toString()}
+  try{
+    var p=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Yangon',weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit',hour12:false}).formatToParts(new Date());
+    var g=function(t){var f=p.filter(function(x){return x.type===t})[0];return f?f.value:''};
+    var wd={'Sunday':'တနင်္ဂနွေ','Monday':'တနင်္လာ','Tuesday':'အင်္ဂါ','Wednesday':'ဗုဒ္ဓဟူး','Thursday':'ကြာသပတေး','Friday':'သောကြာ','Saturday':'စနေ'};
+    var mo={'January':'ဇန်နဝါရီ','February':'ဖေဖော်ဝါရီ','March':'မတ်','April':'ဧပြီ','May':'မေ','June':'ဇွန်','July':'ဇူလိုင်','August':'ဩဂုတ်','September':'စက်တင်ဘာ','October':'အောက်တိုဘာ','November':'နိုဝင်ဘာ','December':'ဒီဇင်ဘာ'};
+    var h=parseInt(g('hour'),10),mi=g('minute');
+    var per=h<5?'ည':(h<12?'မနက်':(h<17?'နေ့လယ်':'ညနေ'));
+    var h12=h%12===0?12:h%12;
+    return (wd[g('weekday')]||g('weekday'))+'နေ့၊ '+toArabic(g('day'))+' '+(mo[g('month')]||g('month'))+' '+toArabic(g('year'))+'၊ '+per+' '+toArabic(String(h12))+':'+toArabic(mi)+' နာရီ';
+  }catch(e){return new Date().toString()}
 }
 function handleLocal(q){
   var t=q;
