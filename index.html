@@ -70,13 +70,13 @@ ul.dlist li{margin:2px 0}
 <div class="htitle"><h1>🎙️ Zoe Lay AI Agent</h1></div>
 <div class="hspacer"></div>
 </div>
-<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V5.0</p>
+<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V6.0</p>
 </header>
 <div id="overlay"></div>
 <aside id="drawer">
 <div class="dhead">
 <div class="davatar">🎙️</div>
-<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V5.0</p></div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V6.0</p></div>
 <button id="closeDrawer">✕</button>
 </div>
 <section class="dsec">
@@ -115,7 +115,7 @@ ul.dlist li{margin:2px 0}
 <button data-q="မှတ်စုတွေပြပါ">📝 မှတ်စုတွေ</button>
 <button data-q="မြန်မာနိုင်ငံရဲ့မြို့တော်က ဘယ်မှာလဲ">❓ စမ်းမေးကြည့်</button>
 <button data-q="Hello ကို မြန်မာလိုဘာသာပြန်ပေး">🌐 ဘာသာပြန်</button>
-</div>
+<button data-q="အခု ရွှေဈေး ဘယ်လောက်လဲ">🥇 ရွှေဈေး</button><button data-q="ရွှေသတင်း ပြောပါ">📰 ရွှေသတင်း</button></div>
 </main>
 <div class="bar"><div class="barinner">
 <input id="text" placeholder="စာရိုက်ပြီးလည်း မေးလို့ရတယ်…" autocomplete="off">
@@ -432,10 +432,79 @@ function askBrain(q){
     return txt;
   });
 }
+
+// ---------- Live + App actions (previously 'not possible') ----------
+function handleAsync(q){
+  var low=q.toLowerCase();
+  var isNews=(/သတင်း|news/.test(q));
+  var isGold=(/ရွှေဈေး|ရွှေစျေး|gold|xauusd|ရွှေ/.test(q));
+  if(isGold&&!isNews&&(/ဈေး|စျေး|ဘယ်လောက်|price|ဘယ်နှ/.test(q)||/gold|xauusd/.test(low))){
+    var th=addMsg('ai','ရွှေဈေး ရှာနေသည်…');
+    fetchTimeout('https://data-api.binance.vision/api/v3/ticker/price?symbol=PAXGUSDT',{},12000)
+    .then(function(r){if(!r.ok)throw new Error('binance');return r.json()})
+    .then(function(j){
+      var pr=parseFloat(j.price);
+      var ans='အခု ရွှေဈေး (PAXG) = $'+pr.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' ဖြစ်ပါတယ်။ ('+yangonNow()+')\nPAXG က ရွှေနဲ့ ကျောထောက်ထားတဲ့ token ပါ၊ တရားဝင် XAUUSD spot နဲ့ ဒေါ်လာ အနည်းငယ်ပဲ ကွာတယ်။';
+      th.textContent=ans;var sm=document.createElement('small');sm.textContent='Zoe Lay';th.appendChild(sm);speak(ans);history.push({role:'user',content:q},{role:'assistant',content:ans});
+    })
+    .catch(function(){
+      fetchTimeout('https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd',{},12000)
+      .then(function(r){if(!r.ok)throw new Error('cg');return r.json()})
+      .then(function(j){
+        var pr=j['pax-gold'].usd;
+        var ans='အခု ရွှေဈေး (PAXG) = $'+pr.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' ဖြစ်ပါတယ်။ ('+yangonNow()+')';
+        th.textContent=ans;var sm=document.createElement('small');sm.textContent='Zoe Lay';th.appendChild(sm);speak(ans);history.push({role:'user',content:q},{role:'assistant',content:ans});
+      })
+      .catch(function(){th.textContent='ရွှေဈေး ဆွဲမရဘူး — အင်တာနက်စစ်ပြီး ထပ်မေးကြည့်ပါ။';});
+    });
+    return true;
+  }
+  if(isGold&&isNews){
+    var th2=addMsg('ai','ရွှေသတင်း ရှာနေသည်…');
+    var rss='https://news.google.com/rss/search?q=gold%20price&hl=en-US&gl=US&ceid=US:en';
+    fetchTimeout('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rss),{},15000)
+    .then(function(r){if(!r.ok)throw new Error('news');return r.json()})
+    .then(function(j){
+      if(!j.items||!j.items.length)throw new Error('empty');
+      var lines='ရွှေသတင်း အသစ်ဆုံး ၃ ခု:';
+      j.items.slice(0,3).forEach(function(it,i){lines+='\n'+(i+1)+'. '+it.title+' ('+(it.pubDate||'').slice(0,10)+')';});
+      th2.textContent=lines;var sm=document.createElement('small');sm.textContent='Zoe Lay';th2.appendChild(sm);speak(lines);history.push({role:'user',content:q},{role:'assistant',content:lines});
+    })
+    .catch(function(){th2.textContent='ရွှေသတင်း ဆွဲမရဘူး — အင်တာနက်စစ်ပြီး ထပ်မေးကြည့်ပါ။';});
+    return true;
+  }
+  var apps={'telegram':'https://t.me/','တယ်လီဂရမ်':'https://t.me/','facebook':'https://www.facebook.com/','ဖေ့ဘုတ်':'https://www.facebook.com/','fb':'https://www.facebook.com/','youtube':'https://www.youtube.com/','ယူကျူ':'https://www.youtube.com/','whatsapp':'https://wa.me/','tiktok':'https://www.tiktok.com/'};
+  for(var k in apps){
+    if(low.indexOf(k)>=0&&(/ဖွင့်|open/.test(q))){
+      window.open(apps[k],'_blank');
+      var ans2=k+' ကို ဖွင့်ပေးလိုက်ပြီ။';
+      addMsg('ai',ans2);speak(ans2);history.push({role:'user',content:q},{role:'assistant',content:ans2});
+      return true;
+    }
+  }
+  var shareMatch=q.match(/(telegram|တယ်လီဂရမ်|whatsapp)[^ပို့share]*?(ပို့|share)\s*(.*)/);
+  if(shareMatch){
+    var msg=(shareMatch[3]||'').trim()||'Zoe Lay ကနေ ပို့လိုက်တာပါ';
+    if(shareMatch[1]==='whatsapp')window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
+    else window.open('https://t.me/share/url?url=&text='+encodeURIComponent(msg),'_blank');
+    var ans3='App မှာ စာပြင်ပြီး ပို့ဖို့ ဖွင့်ပေးလိုက်ပြီ — Send ကို နှိပ်ပေးပါ။';
+    addMsg('ai',ans3);speak(ans3);history.push({role:'user',content:q},{role:'assistant',content:ans3});
+    return true;
+  }
+  if(/facebook/.test(low)&&/share|ပို့|ရှဲ/.test(q)){
+    window.open('https://www.facebook.com/sharer/sharer.php?u=https://luuzoe.github.io/myanmar-voice-agent/','_blank');
+    var ans4='Facebook share ကို ဖွင့်ပေးလိုက်ပြီ — Facebook က စာကို ကိုယ်တိုင် ရိုက်ထည့်ခိုင်းတယ်၊ အဲ့ဒါ Facebook ရဲ့ စည်းကမ်း။';
+    addMsg('ai',ans4);speak(ans4);history.push({role:'user',content:q},{role:'assistant',content:ans4});
+    return true;
+  }
+  return false;
+}
 // ---------- Main ----------
+
 function handleUser(q){
   if(!q)return;
   addMsg('me',q);textEl.value='';
+  if(handleAsync(q))return;
   var local=handleLocal(q);
   if(local){addMsg('ai',local);speak(local);history.push({role:'user',content:q},{role:'assistant',content:local});return;}
   var thinking=addMsg('ai','စဉ်းစားနေသည်…');
