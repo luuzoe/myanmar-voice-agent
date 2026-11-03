@@ -27,8 +27,9 @@ main{max-width:720px;margin:0 auto;padding:12px 12px 140px}
 #miclabel{font-size:13px;margin-top:7px;color:#57534e}
 .controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
 .controls button,.controls select{padding:9px 12px;border-radius:999px;border:1px solid #d6d3d1;background:#fff;font-size:14px}
-.chips{display:flex;gap:7px;flex-wrap:nowrap;justify-content:flex-start;margin:10px 0;overflow-x:auto;padding-bottom:4px}
-.chips button{flex-shrink:0;padding:7px 11px;border-radius:999px;border:1px solid #fdba74;background:#ffedd5;font-size:13px;white-space:nowrap}
+.chips{display:flex;gap:6px;flex-wrap:nowrap;justify-content:flex-start;margin:10px 0;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex-shrink:0;padding:6px 10px;border-radius:999px;border:1px solid #fdba74;background:#ffedd5;font-size:12px;white-space:nowrap}
 .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e7e5e4;padding:10px}
 .barinner{max-width:720px;margin:0 auto;display:flex;gap:8px}
 #text{flex:1;padding:11px 14px;border:1px solid #d6d3d1;border-radius:999px;font-size:15px}
@@ -69,19 +70,19 @@ ul.dlist li{margin:2px 0}
 <div class="htitle"><h1>🎙️ Zoe Lay AI Agent</h1></div>
 <div class="hspacer"></div>
 </div>
-<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V3.0</p>
+<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V4.0</p>
 </header>
 <div id="overlay"></div>
 <aside id="drawer">
 <div class="dhead">
 <div class="davatar">🎙️</div>
-<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V3.0</p></div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V4.0</p></div>
 <button id="closeDrawer">✕</button>
 </div>
 <section class="dsec">
 <h3>🧠 AI</h3>
-<div class="drow" style="display:block"><span>AI ရွေးပါ</span><select id="providerSel" style="margin-top:8px"><option value="pollinations">Pollinations (အခမဲ့)</option><option value="musefree">Muse အခမဲ့ (Pollinations token လို)</option><option value="claude">Muse / Claude (ဝယ်ရတဲ့ key)</option></select></div>
-<div class="drow" style="display:block" id="pollTokenRow"><span>Pollinations Token (အခမဲ့, ဖုန်းထဲမှာပဲ သိမ်းမယ်)</span><input id="pollTokenEl" type="password" placeholder="enter.pollinations.ai က key" style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"><br><small>card မလိုဘူး — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့်ပြီး key ယူပါ။</small></div>
+<div class="drow" style="display:block"><span>AI ရွေးပါ</span><select id="providerSel" style="margin-top:8px"><option value="pollinations">Pollinations (အခမဲ့)</option><option value="fastfree">အမြန်ဆုံး AI (အခမဲ့, token လို)</option><option value="musefree">Muse အခမဲ့ (Pollinations token လို)</option><option value="claude">Muse / Claude (ဝယ်ရတဲ့ key)</option></select></div>
+<div class="drow" style="display:block" id="pollTokenRow"><span>Pollinations Token (အခမဲ့, ဖုန်းထဲမှာပဲ သိမ်းမယ်)</span><input id="pollTokenEl" type="password" placeholder="enter.pollinations.ai က key" style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"><br><small>card မလိုဘူး — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့်ပြီး key ယူပါ။</small><br><button id="saveTokenBtn" class="dbtn" style="margin-top:8px">💾 သိမ်း</button> <small id="pollSaved"></small></div>
 <div class="drow" style="display:block" id="claudeKeyRow"><span>Claude API Key</span><input id="claudeKey" type="password" placeholder="sk-ant-..." style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"></div>
 </section>
 <section class="dsec">
@@ -105,7 +106,7 @@ ul.dlist li{margin:2px 0}
 <div class="micwrap">
 <button id="mic" aria-label="အသံနဲ့ပြော">🎤</button>
 <div id="miclabel">မိုက်ခရိုဖုန်းနှိပ်ပြီး ပြောပါ</div>
-<button id="recBtn" style="margin-top:8px;padding:8px 14px;border-radius:999px;border:1px solid #fdba74;background:#ffedd5;font-size:13px">🎙️ အသံဖမ်းပြီး ပို့မယ် (Google mic မရရင်)</button>
+<button id="recBtn" style="margin-top:8px;padding:8px 14px;border-radius:999px;border:1px solid #fdba74;background:#ffedd5;font-size:13px">🎙️ အသံဖမ်းပြီး ပို့</button>
 <div id="recLabel" style="font-size:13px;color:#57534e;margin-top:6px"></div>
 </div>
 <div class="chips">
@@ -139,7 +140,7 @@ var pollTokenEl=document.getElementById('pollTokenEl');
 var pollTokenRow=document.getElementById('pollTokenRow');
 var claudeKeyEl=document.getElementById('claudeKey');
 var claudeKeyRow=document.getElementById('claudeKeyRow');
-function updateKeyRow(){if(claudeKeyRow)claudeKeyRow.style.display=(providerSel.value==='claude')?'block':'none';if(pollTokenRow)pollTokenRow.style.display=(providerSel.value==='musefree')?'block':'none';}
+function updateKeyRow(){if(claudeKeyRow)claudeKeyRow.style.display=(providerSel.value==='claude')?'block':'none';if(pollTokenRow)pollTokenRow.style.display=(providerSel.value==='musefree'||providerSel.value==='fastfree')?'block':'none';}
 try{
   var _s=JSON.parse(localStorage.getItem('zoelay_settings')||'{}');
   if(_s.auto!==undefined)autoSpeak.checked=_s.auto;
@@ -186,7 +187,12 @@ function pickVoice(){
     else{statusEl.innerHTML='ℹ️ Google မြန်မာအသံနဲ့ ပြောပေးမယ်';}
     return;
   }
-  var list=my.length?my:voices;
+  if(!my.length){
+    var oo2=document.createElement('option');oo2.textContent='မြန်မာအသံ မရှိဘူး — Google အသံ သုံးမယ်';voiceSel.appendChild(oo2);
+    if(savedVoice)voiceSel.value=savedVoice;
+    return;
+  }
+  var list=my;
   list.forEach(function(v){
     var oo=document.createElement('option');oo.value=v.name;oo.textContent=v.name+' ('+v.lang+')';voiceSel.appendChild(oo);
   });
@@ -312,6 +318,11 @@ function yangonNow(){
   }catch(e){return new Date().toString()}
 }
 function handleLocal(q){
+  var low=q.toLowerCase().trim();
+  if(/^(hi|hello|hey|hii+|မင်္ဂလာပါ|ဟိုင်း)[!?.]*$/.test(low))return 'မင်္ဂလာပါ။ ဘာကူညီရမလဲ။';
+  if(low.indexOf('နေကောင်းလား')>=0||low.indexOf('how are you')>=0)return 'နေကောင်းပါတယ်။ မင်းရော နေကောင်းလား။';
+  if(low.indexOf('မင်းဘယ်သူလဲ')>=0||low.indexOf('who are you')>=0)return 'ကျွန်မက Zoe Lay, မြန်မာ AI Agent ပါ။';
+  if(low.indexOf('ဘာလုပ်နိုင်လဲ')>=0||low.indexOf('what can you do')>=0)return 'မေးခွန်းဖြေတာ၊ ရှင်းပြတာ၊ ဘာသာပြန်တာ၊ စာရေးတာ၊ အချိန်၊ မှတ်စု၊ ရှာဖွေတာ လုပ်နိုင်တယ်။';
   var t=q;
   if(/အချိန်|နာရီ/.test(t)&&/ဘယ်လောက်|ဘယ်နှ/.test(t)){
     return 'အခု မြန်မာစံတော်ချိန် (ရန်ကုန်) က '+yangonNow()+' ဖြစ်ပါတယ်။';
@@ -352,18 +363,25 @@ function handleLocal(q){
   return null;
 }
 // ---------- Brain: Pollinations (free) or Muse/Claude (local key) ----------
+function fetchTimeout(url,opts,ms){
+  var ctl=('AbortController' in window)?new AbortController():null;
+  var to=setTimeout(function(){if(ctl)ctl.abort();},ms||25000);
+  var o=opts||{};if(ctl)o.signal=ctl.signal;
+  return fetch(url,o).then(function(r){clearTimeout(to);return r;}).catch(function(e){clearTimeout(to);var er=new Error('timeout');er.cause=e;throw er;});
+}
+
 function askBrain(q){
   var sys='You are Zoe Lay, a friendly Burmese AI assistant. Answer ONLY in Burmese (Myanmar script) unless the user asks in another language. Keep answers voice-friendly and concise: usually 2-4 short sentences, longer only for explanations. If you do not know something, or it needs live prices, live news or live scores, say clearly that you do not have live data and do not invent numbers, dates or results.';
-  if(providerSel.value==='musefree'){
+  if(providerSel.value==='musefree'||providerSel.value==='fastfree'){
     var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
     if(!ptoken){
       var e2=new Error('no-poll-token');
-      e2.userMessage='Muse အခမဲ့ကို သုံးဖို့ Pollinations Token လိုတယ် — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့် (card မလို), key ယူပြီး ☰ Menu > AI ထဲမှာ ထည့်ပါ။';
+      e2.userMessage='အမြန်ဆုံး / Muse အခမဲ့ကို သုံးဖို့ Pollinations Token လိုတယ် — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့် (card မလို), key ယူပြီး ☰ Menu > AI ထဲမှာ ထည့်ပါ။';
       return Promise.reject(e2);
     }
     var mmsgs=[{role:'system',content:sys}];history.slice(-6).forEach(function(h){mmsgs.push(h)});mmsgs.push({role:'user',content:q});
-    return fetch('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:'community/vendouple/muse-glimmer-30b:free',max_tokens:600,messages:mmsgs})})
-    .then(function(r){if(!r.ok)throw new Error('musefree '+r.status);return r.json()})
+    return fetchTimeout('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:(providerSel.value==='fastfree'?'openai/gpt-5.4-nano':'community/vendouple/muse-glimmer-30b:free'),max_tokens:600,messages:mmsgs})})
+    .then(function(r){if(!r.ok)throw new Error('freebrain '+r.status);return r.json()})
     .then(function(j){
       var t='';try{t=(j.choices[0].message.content||'').trim();}catch(e){}
       if(!t)throw new Error('empty');
@@ -378,7 +396,7 @@ function askBrain(q){
       return Promise.reject(e);
     }
     var cmsgs=[];history.slice(-6).forEach(function(h){cmsgs.push(h)});cmsgs.push({role:'user',content:q});
-    return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:600,system:sys,messages:cmsgs})})
+    return fetchTimeout('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:600,system:sys,messages:cmsgs})})
     .then(function(r){if(!r.ok)throw new Error('claude '+r.status);return r.json()})
     .then(function(j){
       var t='';if(j.content){j.content.forEach(function(c){if(c.type==='text')t+=c.text;});}
@@ -389,7 +407,7 @@ function askBrain(q){
   var msgs=[{role:'system',content:sys}];
   history.slice(-6).forEach(function(h){msgs.push(h)});
   msgs.push({role:'user',content:q});
-  return fetch('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:msgs})})
+  return fetchTimeout('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:msgs})})
   .then(function(r){if(!r.ok)throw new Error('brain '+r.status);return r.text()})
   .then(function(txt){
     txt=(txt||'').trim();
@@ -404,11 +422,14 @@ function handleUser(q){
   var local=handleLocal(q);
   if(local){addMsg('ai',local);speak(local);history.push({role:'user',content:q},{role:'assistant',content:local});return;}
   var thinking=addMsg('ai','စဉ်းစားနေသည်…');
+  var thinkTimer=setTimeout(function(){if(thinking&&thinking.textContent.indexOf('စဉ်းစားနေသည်')===0)thinking.textContent='စဉ်းစားနေသည်… (အင်တာနက်နှေးနေတယ်)';},15000);
   askBrain(q).then(function(ans){
+    clearTimeout(thinkTimer);
     thinking.textContent=ans;var s=document.createElement('small');s.textContent='Zoe Lay';thinking.appendChild(s);
     speak(ans);history.push({role:'user',content:q},{role:'assistant',content:ans});
   }).catch(function(err){
-    var msg=(err&&err.userMessage)?err.userMessage:'စိတ်မကောင်းပါဘူး၊ အခု AI ဦးနှောက်ကို ဆက်သွယ်လို့မရဘူး။ အင်တာနက်စစ်ပြီး ထပ်မေးကြည့်ပါ။ အချိန်၊ မှတ်စု၊ ရှာဖွေတာလောက်တော့ အင်တာနက်မလိုဘဲ လုပ်ပေးလို့ရတယ်။';
+    clearTimeout(thinkTimer);
+    var msg=(err&&err.userMessage)?err.userMessage:((err&&err.message==='timeout')?'အင်တာနက်နှေးနေလို့ AI ကို ဆက်သွယ်မရဘူး (၂၅ စက္ကန့်စောင့်ပြီးပြီ) — ထပ်မေးကြည့်ပါ။':'စိတ်မကောင်းပါဘူး၊ အခု AI ဦးနှောက်ကို ဆက်သွယ်လို့မရဘူး။ အင်တာနက်စစ်ပြီး ထပ်မေးကြည့်ပါ။ အချိန်၊ မှတ်စု၊ ရှာဖွေတာလောက်တော့ အင်တာနက်မလိုဘဲ လုပ်ပေးလို့ရတယ်။');
     thinking.textContent=msg;var s=document.createElement('small');s.textContent='Zoe Lay';thinking.appendChild(s);
     speak(msg);
   });
@@ -421,7 +442,7 @@ var mediaRec=null, recChunks=[], recording=false;
 var recBtn=document.getElementById('recBtn');
 var recLabel=document.getElementById('recLabel');
 function stopRecording(){
-  if(mediaRec&&recording){try{mediaRec.stop()}catch(e){}recording=false;recBtn.textContent='🎙️ အသံဖမ်းပြီး ပို့မယ် (Google mic မရရင်)';}
+  if(mediaRec&&recording){try{mediaRec.stop()}catch(e){}recording=false;recBtn.textContent='🎙️ အသံဖမ်းပြီး ပို့';}
 }
 if(recBtn){
 recBtn.onclick=function(){
@@ -460,7 +481,10 @@ document.getElementById('overlay').onclick=closeDrawer;
 autoSpeak.onchange=saveSettings;handsfree.onchange=saveSettings;voiceSel.onchange=saveSettings;
 providerSel.onchange=function(){updateKeyRow();saveSettings();};
 claudeKeyEl.onchange=saveSettings;claudeKeyEl.oninput=saveSettings;
-if(pollTokenEl){pollTokenEl.onchange=saveSettings;pollTokenEl.oninput=saveSettings;}
+if(pollTokenEl){pollTokenEl.onchange=saveSettings;pollTokenEl.oninput=function(){saveSettings();var el=document.getElementById('pollSaved');if(el)el.textContent='✓ သိမ်းပြီးပြီ';};}
+var saveTokenBtn=document.getElementById('saveTokenBtn');
+if(saveTokenBtn)saveTokenBtn.onclick=function(){saveSettings();var el=document.getElementById('pollSaved');if(el)el.textContent='✓ သိမ်းပြီးပြီ';};
+(function(){var el=document.getElementById('pollSaved');if(el&&pollTokenEl&&pollTokenEl.value)el.textContent='✓ Token ရှိပြီးသား';})();
 rateSel.oninput=function(){voiceRate=parseFloat(rateSel.value);rateVal.textContent=rateSel.value;saveSettings();};
 fontSel.onchange=function(){document.body.classList.remove('font-small','font-large');if(fontSel.value!=='normal')document.body.classList.add('font-'+fontSel.value);saveSettings();};
 document.getElementById('clearChatBtn').onclick=function(){chatEl.innerHTML='';addMsg('ai','မင်္ဂလာပါ။ မိုက်ခရိုဖုန်းနှိပ်ပြီး ပြောပါ။');closeDrawer();};
