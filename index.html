@@ -70,18 +70,18 @@ ul.dlist li{margin:2px 0}
 <div class="htitle"><h1>🎙️ Zoe Lay AI Agent</h1></div>
 <div class="hspacer"></div>
 </div>
-<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V6.0</p>
+<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V7.0</p>
 </header>
 <div id="overlay"></div>
 <aside id="drawer">
 <div class="dhead">
 <div class="davatar">🎙️</div>
-<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V6.0</p></div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V7.0</p></div>
 <button id="closeDrawer">✕</button>
 </div>
 <section class="dsec">
 <h3>🧠 AI</h3>
-<div class="drow" style="display:block"><span>AI ရွေးပါ</span><select id="providerSel" style="margin-top:8px"><option value="pollinations">Pollinations (အခမဲ့)</option><option value="fastfree">အမြန်ဆုံး AI (အခမဲ့, token လို)</option><option value="musefree">Muse အခမဲ့ (Pollinations token လို)</option><option value="claude">Muse / Claude (ဝယ်ရတဲ့ key)</option></select></div>
+<div class="drow" style="display:block"><span>AI ရွေးပါ</span><select id="providerSel" style="margin-top:8px"><option value="pollinations">Pollinations (အခမဲ့)</option><option value="fastfree">အမြန်ဆုံး AI (အခမဲ့, token လို)</option><option value="gpt55">GPT-5.5 (ပိုထက်တယ်, token လို)</option><option value="deepseek">DeepSeek Flash (token လို)</option><option value="qwen">Qwen (token လို)</option><option value="llama">Llama 70B (token လို)</option><option value="mistral">Mistral Large (token လို)</option><option value="grok">Grok (token လို)</option><option value="kimi">Kimi (token လို)</option><option value="musefree">Muse အခမဲ့ (Pollinations token လို)</option><option value="claude">Muse / Claude (ဝယ်ရတဲ့ key)</option></select></div>
 <div class="drow" style="display:block" id="pollTokenRow"><span>Pollinations Token (အခမဲ့, ဖုန်းထဲမှာပဲ သိမ်းမယ်)</span><input id="pollTokenEl" type="password" placeholder="enter.pollinations.ai က key" style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"><br><small>card မလိုဘူး — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့်ပြီး key ယူပါ။</small><br><button id="saveTokenBtn" class="dbtn" style="margin-top:8px">💾 သိမ်း</button> <small id="pollSaved"></small></div>
 <div class="drow" style="display:block" id="claudeKeyRow"><span>Claude API Key</span><input id="claudeKey" type="password" placeholder="sk-ant-..." style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"></div>
 </section>
@@ -140,7 +140,7 @@ var pollTokenEl=document.getElementById('pollTokenEl');
 var pollTokenRow=document.getElementById('pollTokenRow');
 var claudeKeyEl=document.getElementById('claudeKey');
 var claudeKeyRow=document.getElementById('claudeKeyRow');
-function updateKeyRow(){if(claudeKeyRow)claudeKeyRow.style.display=(providerSel.value==='claude')?'block':'none';if(pollTokenRow)pollTokenRow.style.display=(providerSel.value==='musefree'||providerSel.value==='fastfree')?'block':'none';}
+function updateKeyRow(){if(claudeKeyRow)claudeKeyRow.style.display=(providerSel.value==='claude')?'block':'none';var freeProvs=['musefree','fastfree','gpt55','deepseek','qwen','llama','mistral','grok','kimi'];if(pollTokenRow)pollTokenRow.style.display=(freeProvs.indexOf(providerSel.value)>=0)?'block':'none';}
 try{
   var _s=JSON.parse(localStorage.getItem('zoelay_settings')||'{}');
   if(_s.auto!==undefined)autoSpeak.checked=_s.auto;
@@ -389,15 +389,15 @@ function fetchTimeout(url,opts,ms){
 
 function askBrain(q){
   var sys='You are Zoe Lay, a friendly Burmese AI assistant. Answer ONLY in Burmese (Myanmar script) unless the user asks in another language. Keep answers voice-friendly and concise: usually 2-4 short sentences, longer only for explanations. If you do not know something, or it needs live prices, live news or live scores, say clearly that you do not have live data and do not invent numbers, dates or results.';
-  if(providerSel.value==='musefree'||providerSel.value==='fastfree'){
+  if(['musefree','fastfree','gpt55','deepseek','qwen','llama','mistral','grok','kimi'].indexOf(providerSel.value)>=0){
     var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
     if(!ptoken){
       var e2=new Error('no-poll-token');
-      e2.userMessage='အမြန်ဆုံး / Muse အခမဲ့ကို သုံးဖို့ Pollinations Token လိုတယ် — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့် (card မလို), key ယူပြီး ☰ Menu > AI ထဲမှာ ထည့်ပါ။';
+      e2.userMessage='ဒီ AI ကို သုံးဖို့ Pollinations Token လိုတယ် — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့် (card မလို), key ယူပြီး ☰ Menu > AI ထဲမှာ ထည့်ပါ။';
       return Promise.reject(e2);
     }
     var mmsgs=[{role:'system',content:sys}];history.slice(-6).forEach(function(h){mmsgs.push(h)});mmsgs.push({role:'user',content:q});
-    return fetchTimeout('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:(providerSel.value==='fastfree'?'openai/gpt-5.4-nano':'community/vendouple/muse-glimmer-30b:free'),max_tokens:600,messages:mmsgs})})
+    return fetchTimeout('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:({fastfree:'openai/gpt-5.4-nano',gpt55:'openai/gpt-5.5',deepseek:'deepseek/deepseek-v4.1-flash',qwen:'qwen/qwen3.8-2.4t-a95b',llama:'meta/llama-3.3-70b-instruct',mistral:'mistralai/mistral-large-3',grok:'x-ai/grok-4.3',kimi:'moonshotai/kimi-k2.6',musefree:'community/vendouple/muse-glimmer-30b:free'}[providerSel.value]||'openai/gpt-5.4-nano'),max_tokens:600,messages:mmsgs})})
     .then(function(r){if(!r.ok)throw new Error('freebrain '+r.status);return r.json()})
     .then(function(j){
       var t='';try{t=(j.choices[0].message.content||'').trim();}catch(e){}
