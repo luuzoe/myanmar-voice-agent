@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Zoe Lay — မြန်မာ AI အသံ Agent</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans Myanmar","Myanmar Text",system-ui,sans-serif;background:#fff7ed;color:#1f2937}
+header{background:#7c2d12;color:#fff;padding:16px;text-align:center}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;font-size:14px;opacity:.9}
+main{max-width:720px;margin:0 auto;padding:12px 12px 140px}
+#status{background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.6}
+#chat{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.msg{padding:12px 14px;border-radius:16px;line-height:1.7;font-size:16px;max-width:92%}
+.me{align-self:flex-end;background:#7c2d12;color:#fff;border-bottom-right-radius:4px}
+.ai{align-self:flex-start;background:#fff;border:1px solid #e7e5e4;border-bottom-left-radius:4px}
+.msg small{display:block;opacity:.7;font-size:12px;margin-top:4px}
+.micwrap{text-align:center;margin:18px 0 8px}
+#mic{width:96px;height:96px;border-radius:50%;border:none;background:#dc2626;color:#fff;font-size:42px;cursor:pointer;box-shadow:0 6px 18px rgba(220,38,38,.35)}
+#mic.listening{background:#16a34a;animation:pulse 1.2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}100%{box-shadow:0 0 0 22px rgba(22,163,74,0)}}
+#miclabel{font-size:15px;margin-top:8px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.controls button,.controls select{padding:9px 12px;border-radius:999px;border:1px solid #d6d3d1;background:#fff;font-size:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.chips button{padding:8px 12px;border-radius:999px;border:1px solid #fdba74;background:#ffedd5;font-size:13px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e7e5e4;padding:10px}
+.barinner{max-width:720px;margin:0 auto;display:flex;gap:8px}
+#text{flex:1;padding:12px;border:1px solid #d6d3d1;border-radius:999px;font-size:16px}
+#send{padding:12px 18px;border:none;border-radius:999px;background:#7c2d12;color:#fff;font-size:16px}
+.notebox{background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px;padding:12px;font-size:14px;line-height:1.7;margin-top:12px}
+h3{font-size:16px}
+</style>
+</head>
+<body>
+<header>
+<h1>🎙️ Zoe Lay AI Agent</h1>
+<p>မြန်မာလိုပြော၊ မြန်မာလိုဖြေ — မေးလို့လည်းရ၊ ခိုင်းလို့လည်းရ</p>
+</header>
+<main>
+<div id="status">စစ်နေသည်…</div>
+<div id="chat"></div>
+<div class="micwrap">
+<button id="mic" aria-label="အသံနဲ့ပြော">🎤</button>
+<div id="miclabel">မိုက်ခရိုဖုန်းကိုနှိပ်ပြီး မြန်မာလိုပြောပါ</div>
+</div>
+<div class="controls">
+<label style="font-size:14px"><input type="checkbox" id="autospeak" checked> အသံနဲ့ပြန်ပြော</label>
+<label style="font-size:14px"><input type="checkbox" id="handsfree"> ဆက်တိုက်ပြော (hands-free)</label>
+<select id="voiceSel"><option value="">အသံ ရွေးနေသည်…</option></select>
+<button id="stopBtn">⏹ အသံရပ်</button>
+</div>
+<div class="chips">
+<button data-q="အခုအချိန်ဘယ်လောက်ရှိပြီလဲ">🕐 အချိန်</button>
+<button data-q="ဒီနေ့က ဘယ်နေ့လဲ">📅 နေ့စွဲ</button>
+<button data-q="မှတ်စုတွေပြပါ">📝 မှတ်စုတွေ</button>
+<button data-q="မြန်မာနိုင်ငံရဲ့မြို့တော်က ဘယ်မှာလဲ">❓ စမ်းမေးကြည့်</button>
+<button data-q="Hello ကို မြန်မာလိုဘာသာပြန်ပေး">🌐 ဘာသာပြန်</button>
+</div>
+<div class="notebox">
+<h3>ဒီ Agent က ဘာလုပ်ပေးနိုင်လဲ (V1)</h3>
+<b>မေးခွန်းဖြေတာ</b> — အထွေထွေဗဟုသုတ၊ ရှင်းပြတာ၊ ဘာသာပြန်၊ စာရေးပေးတာ၊ တွက်ချက်တာ။<br>
+<b>ခိုင်းတာလုပ်တာ</b> — အချိန်/နေ့စွဲ ပြောတာ၊ မှတ်စုမှတ်တာ/ပြတာ၊ ဝဘ်ရှာဖွေဖွင့်ပေးတာ၊ မိနစ်ပိုင်းအတွင်း သတိပေးတာ။<br>
+ဥပမာ — “စျေးဝယ်စာရင်းထဲ ကြက်ဥထည့်ထား”၊ “၅ မိနစ်ကြာရင် သတိပေး”၊ “နေပြည်တော်အကြောင်း ရှာပေး” လို့ပြောပါ။<br>
+<b>မရသေးတာ</b> — ဖုန်းထဲက App တွေဖွင့်/စာပို့တာ၊ Facebook/Telegram ပို့တာ၊ တိုက်ရိုက်ရွှေဈေး/သတင်းအချိန်နဲ့တပြေးညီ ပြောတာတွေက နောက်ဗားရှင်းမှ လိုပါတယ်။ အဲ့တာတွေမေးရင် Agent က ခန့်မှန်းမဖြေဘဲ မသိဘူးလို့ ပြောပါမယ်။
+</div>
+</main>
+<div class="bar"><div class="barinner">
+<input id="text" placeholder="စာရိုက်ပြီးလည်း မေးလို့ရတယ်…" autocomplete="off">
+<button id="send">ပို့</button>
+</div></div>
+<script>
+var chatEl=document.getElementById('chat');
+var statusEl=document.getElementById('status');
+var micBtn=document.getElementById('mic');
+var micLabel=document.getElementById('miclabel');
+var textEl=document.getElementById('text');
+var voiceSel=document.getElementById('voiceSel');
+var autoSpeak=document.getElementById('autospeak');
+var handsfree=document.getElementById('handsfree');
+var history=[];
+var notes=[];
+try{notes=JSON.parse(localStorage.getItem('zoelay_notes')||'[]')}catch(e){notes=[]}
+function saveNotes(){try{localStorage.setItem('zoelay_notes',JSON.stringify(notes))}catch(e){}}
+function addMsg(who,text){
+  var d=document.createElement('div');d.className='msg '+(who==='me'?'me':'ai');
+  d.textContent=text;
+  var s=document.createElement('small');s.textContent=who==='me'?'မင်း':'Zoe Lay';
+  d.appendChild(s);chatEl.appendChild(d);window.scrollTo(0,document.body.scrollHeight);
+  return d;
+}
+addMsg('ai','မင်္ဂလာပါ၊ ကျွန်မက Zoe Lay ပါ။ မိုက်ခရိုဖုန်းနှိပ်ပြီး မြန်မာလိုပြောပါ။ မေးခွန်းမေးလို့ရတယ်၊ ခိုင်းလို့လည်းရတယ်။');
+// ---------- TTS ----------
+var voices=[];
+function pickVoice(){
+  voices=speechSynthesis?speechSynthesis.getVoices():[];
+  voiceSel.innerHTML='';
+  if(!voices.length){var o=document.createElement('option');o.textContent='အသံမတွေ့သေးပါ';voiceSel.appendChild(o);return}
+  var my=voices.filter(function(v){return (v.lang||'').toLowerCase().indexOf('my')===0});
+  var list=my.length?my:voices;
+  list.forEach(function(v){
+    var o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')';voiceSel.appendChild(o);
+  });
+  if(my.length){statusEl.innerHTML='✅ မြန်မာအသံ တွေ့ပြီ ('+my[0].name+') — အသံနဲ့ပြောလို့ရပြီ။';}
+  else{statusEl.innerHTML='⚠️ ဖုန်းမှာ မြန်မာအသံ (my-MM) မတွေ့သေးဘူး။ အသံထွက်မှားနိုင်တယ်။ Settings &gt; Text-to-speech ထဲမှာ မြန်မာ (Burmese) ကို download လုပ်ထားရင် ပိုကောင်းမယ်။ စာနဲ့တော့ အမြဲဖြေပေးမယ်။';}
+}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+else{statusEl.textContent='⚠️ ဒီ browser မှာ အသံထွက်စနစ် မရှိဘူး။ စာနဲ့ပဲ ဖြေပေးမယ်။';}
+function stopSpeak(){if('speechSynthesis' in window){speechSynthesis.cancel();}}
+document.getElementById('stopBtn').onclick=stopSpeak;
+function speak(text){
+  if(!autoSpeak.checked||!('speechSynthesis' in window))return;
+  stopSpeak();
+  var parts=text.match(/[^။.!?\n]{1,180}[။.!?\n]?/g)||[text];
+  var idx=0;
+  function next(){
+    if(idx>=parts.length){if(handsfree.checked){setTimeout(startListen,700);}return;}
+    var u=new SpeechSynthesisUtterance(parts[idx]);
+    var chosen=voices.filter(function(v){return v.name===voiceSel.value})[0];
+    if(chosen)u.voice=chosen;
+    else{var my=voices.filter(function(v){return (v.lang||'').toLowerCase().indexOf('my')===0})[0];if(my)u.voice=my;}
+    u.lang=(u.voice&&u.voice.lang)||'my-MM';u.rate=1;u.pitch=1;
+    u.onend=function(){idx++;next();};
+    u.onerror=function(){idx++;next();};
+    speechSynthesis.speak(u);
+  }
+  next();
+}
+// ---------- STT ----------
+var rec=null;
+function startListen(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){addMsg('ai','ဒီ browser မှာ အသံဖမ်းစနစ် မရှိဘူး။ Chrome နဲ့ဖွင့်ပြီး စာရိုက်မေးပါ။');return;}
+  if(rec){try{rec.stop()}catch(e){}}
+  rec=new SR();rec.lang='my-MM';rec.interimResults=true;rec.continuous=false;
+  micBtn.classList.add('listening');micLabel.textContent='နားထောင်နေသည်… ပြောပြီးရင် ရပ်လိုက်မယ်';
+  var finalText='';
+  rec.onresult=function(e){
+    var interim='';
+    for(var i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal)finalText+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    micLabel.textContent=interim?('ကြားနေသည်: '+interim):'နားထောင်နေသည်…';
+    if(finalText)textEl.value=finalText;
+  };
+  rec.onerror=function(e){
+    micBtn.classList.remove('listening');
+    if(e.error==='not-allowed')micLabel.textContent='မိုက်ခရိုဖုန်း ခွင့်မပြုသေးဘူး — browser က ခွင့်ပြုပေးပါ။';
+    else if(e.error==='no-speech')micLabel.textContent='အသံမကြားရဘူး — ထပ်နှိပ်ပြီး ပြောပါ။';
+    else micLabel.textContent='အသံနားထောင်တာ အဆင်မပြေဘူး ('+e.error+') — စာရိုက်မေးလို့ရတယ်။';
+  };
+  rec.onend=function(){
+    micBtn.classList.remove('listening');micLabel.textContent='မိုက်ခရိုဖုန်းကိုနှိပ်ပြီး မြန်မာလိုပြောပါ';
+    if(finalText.trim())handleUser(finalText.trim());
+  };
+  try{rec.start()}catch(e){micBtn.classList.remove('listening');}
+}
+micBtn.onclick=function(){if(micBtn.classList.contains('listening')){try{rec.stop()}catch(e){}}else{stopSpeak();startListen();}};
+// ---------- Local tasks ----------
+var MY={'၀':'0','၁':'1','၂':'2','၃':'3','၄':'4','၅':'5','၆':'6','၇':'7','၈':'8','၉':'9'};
+function toArabic(s){return s.replace(/[၀-၉]/g,function(c){return MY[c]})}
+function yangonNow(){
+  try{return new Date().toLocaleString('my-MM',{timeZone:'Asia/Yangon',weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'numeric'})}
+  catch(e){return new Date().toString()}
+}
+function handleLocal(q){
+  var t=q;
+  if(/အချိန်|နာရီ/.test(t)&&/ဘယ်လောက်|ဘယ်နှ/.test(t)){
+    return 'အခု မြန်မာစံတော်ချိန် (ရန်ကုန်) က '+yangonNow()+' ဖြစ်ပါတယ်။';
+  }
+  if(/ဒီနေ့|ယနေ့/.test(t)&&/ဘယ်နေ့|ဘယ်ရက်/.test(t)){
+    return 'ဒီနေ့က '+yangonNow()+' ဖြစ်ပါတယ်။';
+  }
+  var m=t.match(/^(မှတ်ထား|မှတ်ထားပေး|စာရင်းထဲ|စာရင်းထည့်)\s*(.+)/);
+  if(m&&m[2]){
+    notes.push(m[2]);saveNotes();
+    return 'မှတ်ထားလိုက်ပြီ — “'+m[2]+'”။ စုစုပေါင်း မှတ်စု '+notes.length+' ခုရှိပြီ။';
+  }
+  if(/မှတ်စုတွေ|မှတ်စုများ|စာရင်းပြ/.test(t)){
+    if(!notes.length)return 'မှတ်စုမရှိသေးဘူး။ “မှတ်ထား …” လို့ပြောပြီး မှတ်ခိုင်းလို့ရတယ်။';
+    return 'မင်းမှတ်စုတွေက — '+notes.map(function(n,i){return (i+1)+'. '+n}).join('၊ ')+' ဖြစ်ပါတယ်။';
+  }
+  if(/မှတ်စုဖျက်|စာရင်းရှင်း|စာရင်းဖျက်/.test(t)){
+    notes=[];saveNotes();return 'မှတ်စုတွေအားလုံး ရှင်းလိုက်ပြီ။';
+  }
+  var rm=t.match(/(\d+|[၀-၉]+)\s*မိနစ်.*သတိပေး/);
+  if(rm){
+    var mins=parseInt(toArabic(rm[1]),10);
+    if(mins>0&&mins<=120){
+      setTimeout(function(){var msg=mins+' မိနစ်ပြည့်ပြီ၊ သတိပေးပါတယ်နော်။';addMsg('ai',msg);speak(msg);},mins*60000);
+      return mins+' မိနစ်ကြာရင် သတိပေးမယ်။ ဒီစာမျက်နှာ ဖွင့်ထားရင် အလုပ်လုပ်မယ်။';
+    }
+  }
+  var sm=t.match(/^(.*)(ကို |အား )?ရှာပေး|ရှာလိုက်/);
+  if(/ရှာပေး|ရှာလိုက်/.test(t)){
+    var query=t.replace(/ရှာပေး|ရှာလိုက်|ကို |အား /g,'').trim();
+    if(query){window.open('https://www.google.com/search?q='+encodeURIComponent(query),'_blank');
+      return '“'+query+'” ကို ရှာဖွေပေးလိုက်ပြီ။ ရှာဖွေမှုစာမျက်နှာ ပွင့်သွားမယ်။';}
+  }
+  var calc=toArabic(t).replace(/\s+/g,'').replace(/x|X|×/g,'*').replace(/÷/g,'/');
+  if(/^[0-9+\-*/().]+$/.test(calc)&&/[+\-*/]/.test(calc)){
+    try{var v=Function('return ('+calc+')')();if(isFinite(v))return calc+' ရဲ့အဖြေက '+v+' ဖြစ်ပါတယ်။';}catch(e){}
+  }
+  return null;
+}
+// ---------- Brain (free, no key) ----------
+function askBrain(q){
+  var msgs=[{role:'system',content:'You are Zoe Lay, a friendly Burmese AI assistant. Answer ONLY in Burmese (Myanmar script) unless the user asks in another language. Keep answers voice-friendly and concise: usually 2-4 short sentences, longer only for explanations. If you do not know something, or it needs live prices, live news or live scores, say clearly that you do not have live data and do not invent numbers, dates or results.'}];
+  history.slice(-6).forEach(function(h){msgs.push(h)});
+  msgs.push({role:'user',content:q});
+  return fetch('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:msgs})})
+  .then(function(r){if(!r.ok)throw new Error('brain '+r.status);return r.text()})
+  .then(function(txt){
+    txt=(txt||'').trim();
+    if(!txt)throw new Error('empty');
+    return txt;
+  });
+}
+// ---------- Main ----------
+function handleUser(q){
+  if(!q)return;
+  addMsg('me',q);textEl.value='';
+  var local=handleLocal(q);
+  if(local){addMsg('ai',local);speak(local);history.push({role:'user',content:q},{role:'assistant',content:local});return;}
+  var thinking=addMsg('ai','စဉ်းစားနေသည်…');
+  askBrain(q).then(function(ans){
+    thinking.textContent=ans;var s=document.createElement('small');s.textContent='Zoe Lay';thinking.appendChild(s);
+    speak(ans);history.push({role:'user',content:q},{role:'assistant',content:ans});
+  }).catch(function(){
+    var msg='စိတ်မကောင်းပါဘူး၊ အခု AI ဦးနှောက်ကို ဆက်သွယ်လို့မရဘူး။ အင်တာနက်စစ်ပြီး ထပ်မေးကြည့်ပါ။ အချိန်၊ မှတ်စု၊ ရှာဖွေတာလောက်တော့ အင်တာနက်မလိုဘဲ လုပ်ပေးလို့ရတယ်။';
+    thinking.textContent=msg;var s=document.createElement('small');s.textContent='Zoe Lay';thinking.appendChild(s);
+    speak(msg);
+  });
+}
+document.getElementById('send').onclick=function(){var q=textEl.value.trim();handleUser(q)};
+textEl.addEventListener('keydown',function(e){if(e.key==='Enter'){handleUser(textEl.value.trim())}});
+document.querySelectorAll('.chips button').forEach(function(b){b.onclick=function(){handleUser(b.getAttribute('data-q'))}});
+</script>
+</body>
+</html>
