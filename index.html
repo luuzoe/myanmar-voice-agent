@@ -50,6 +50,7 @@ h3{font-size:16px}
 <label style="font-size:14px"><input type="checkbox" id="autospeak" checked> အသံနဲ့ပြန်ပြော</label>
 <label style="font-size:14px"><input type="checkbox" id="handsfree"> ဆက်တိုက်ပြော (hands-free)</label>
 <select id="voiceSel"><option value="">အသံ ရွေးနေသည်…</option></select>
+<button id="testVoiceBtn">🔊 အသံစမ်းကြည့်</button>
 <button id="stopBtn">⏹ အသံရပ်</button>
 </div>
 <div class="chips">
@@ -94,39 +95,71 @@ function addMsg(who,text){
 addMsg('ai','မင်္ဂလာပါ၊ ကျွန်မက Zoe Lay ပါ။ မိုက်ခရိုဖုန်းနှိပ်ပြီး မြန်မာလိုပြောပါ။ မေးခွန်းမေးလို့ရတယ်၊ ခိုင်းလို့လည်းရတယ်။');
 // ---------- TTS ----------
 var voices=[];
+var voiceTries=0;
+var curAudio=null;
+function hasMyVoice(){return voices.some(function(v){return (v.lang||'').toLowerCase().indexOf('my')===0})}
 function pickVoice(){
-  voices=speechSynthesis?speechSynthesis.getVoices():[];
-  voiceSel.innerHTML='';
-  if(!voices.length){var o=document.createElement('option');o.textContent='အသံမတွေ့သေးပါ';voiceSel.appendChild(o);return}
+  voices=('speechSynthesis' in window)?speechSynthesis.getVoices():[];
   var my=voices.filter(function(v){return (v.lang||'').toLowerCase().indexOf('my')===0});
+  var prev=voiceSel.value;
+  voiceSel.innerHTML='';
+  if(!voices.length){
+    var o=document.createElement('option');o.textContent='အသံမတွေ့သေးပါ';voiceSel.appendChild(o);
+    voiceTries++;
+    if(voiceTries<8){setTimeout(pickVoice,800);statusEl.textContent='အသံစာရင်း တင်နေသည်… ('+voiceTries+'/8)';}
+    else{statusEl.innerHTML='⚠️ ဖုန်းမှာ မြန်မာအသံ မတွေ့ဘူး — ဒါကြောင့် Google မြန်မာအသံနဲ့ ပြောပေးမယ်။ အသံစမ်းကြည့် ခလုတ်နှိပ်ပြီး စမ်းပါ။';}
+    return;
+  }
   var list=my.length?my:voices;
   list.forEach(function(v){
-    var o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')';voiceSel.appendChild(o);
+    var oo=document.createElement('option');oo.value=v.name;oo.textContent=v.name+' ('+v.lang+')';voiceSel.appendChild(oo);
   });
+  if(prev)voiceSel.value=prev;
   if(my.length){statusEl.innerHTML='✅ မြန်မာအသံ တွေ့ပြီ ('+my[0].name+') — အသံနဲ့ပြောလို့ရပြီ။';}
-  else{statusEl.innerHTML='⚠️ ဖုန်းမှာ မြန်မာအသံ (my-MM) မတွေ့သေးဘူး။ အသံထွက်မှားနိုင်တယ်။ Settings &gt; Text-to-speech ထဲမှာ မြန်မာ (Burmese) ကို download လုပ်ထားရင် ပိုကောင်းမယ်။ စာနဲ့တော့ အမြဲဖြေပေးမယ်။';}
+  else{statusEl.innerHTML='ℹ️ ဖုန်းမှာ မြန်မာအသံ (my-MM) မတွေ့ဘူး — Google မြန်မာအသံနဲ့ ပြောပေးမယ်။ အသံစမ်းကြည့် ခလုတ်နှိပ်ပြီး စမ်းပါ။';}
 }
 if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
-else{statusEl.textContent='⚠️ ဒီ browser မှာ အသံထွက်စနစ် မရှိဘူး။ စာနဲ့ပဲ ဖြေပေးမယ်။';}
-function stopSpeak(){if('speechSynthesis' in window){speechSynthesis.cancel();}}
+else{statusEl.textContent='ℹ️ ဖုန်းအသံစနစ် မရှိဘူး — Google မြန်မာအသံနဲ့ ပြောပေးမယ်။';}
+function stopSpeak(){
+  if('speechSynthesis' in window){try{speechSynthesis.cancel()}catch(e){}}
+  if(curAudio){try{curAudio.pause()}catch(e){}curAudio=null;}
+}
 document.getElementById('stopBtn').onclick=stopSpeak;
-function speak(text){
-  if(!autoSpeak.checked||!('speechSynthesis' in window))return;
-  stopSpeak();
-  var parts=text.match(/[^။.!?\n]{1,180}[။.!?\n]?/g)||[text];
+document.getElementById('testVoiceBtn').onclick=function(){speak('မင်္ဂလာပါ၊ ကျွန်မက Zoe Lay ပါ။ ဒီအသံကို ကြားရလား။')};
+function speakGoogle(text,ondone){
+  var parts=text.match(/[^။.!?\n]{1,170}[။.!?\n]?/g)||[text];
   var idx=0;
   function next(){
-    if(idx>=parts.length){if(handsfree.checked){setTimeout(startListen,700);}return;}
-    var u=new SpeechSynthesisUtterance(parts[idx]);
-    var chosen=voices.filter(function(v){return v.name===voiceSel.value})[0];
-    if(chosen)u.voice=chosen;
-    else{var my=voices.filter(function(v){return (v.lang||'').toLowerCase().indexOf('my')===0})[0];if(my)u.voice=my;}
-    u.lang=(u.voice&&u.voice.lang)||'my-MM';u.rate=1;u.pitch=1;
-    u.onend=function(){idx++;next();};
-    u.onerror=function(){idx++;next();};
-    speechSynthesis.speak(u);
+    if(idx>=parts.length){if(ondone)ondone();return;}
+    var a=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&tl=my&client=tw-ob&q='+encodeURIComponent(parts[idx]));
+    curAudio=a;
+    a.onended=function(){idx++;next();};
+    a.onerror=function(){idx++;next();};
+    var pr=a.play();if(pr&&pr.catch)pr.catch(function(){idx++;next();});
   }
   next();
+}
+function speak(text){
+  if(!autoSpeak.checked)return;
+  stopSpeak();
+  if(hasMyVoice()&&('speechSynthesis' in window)){
+    var parts=text.match(/[^။.!?\n]{1,180}[။.!?\n]?/g)||[text];
+    var idx=0;
+    function next(){
+      if(idx>=parts.length){if(handsfree.checked){setTimeout(startListen,700);}return;}
+      var u=new SpeechSynthesisUtterance(parts[idx]);
+      var chosen=voices.filter(function(v){return v.name===voiceSel.value})[0];
+      if(chosen)u.voice=chosen;
+      else{var my=voices.filter(function(v){return (v.lang||'').toLowerCase().indexOf('my')===0})[0];if(my)u.voice=my;}
+      u.lang=(u.voice&&u.voice.lang)||'my-MM';u.rate=1;u.pitch=1;
+      u.onend=function(){idx++;next();};
+      u.onerror=function(){idx++;next();};
+      speechSynthesis.speak(u);
+    }
+    next();
+  } else {
+    speakGoogle(text,function(){if(handsfree.checked){setTimeout(startListen,700);}});
+  }
 }
 // ---------- STT ----------
 var rec=null;
@@ -135,26 +168,32 @@ function startListen(){
   if(!SR){addMsg('ai','ဒီ browser မှာ အသံဖမ်းစနစ် မရှိဘူး။ Chrome နဲ့ဖွင့်ပြီး စာရိုက်မေးပါ။');return;}
   if(rec){try{rec.stop()}catch(e){}}
   rec=new SR();rec.lang='my-MM';rec.interimResults=true;rec.continuous=false;
-  micBtn.classList.add('listening');micLabel.textContent='နားထောင်နေသည်… ပြောပြီးရင် ရပ်လိုက်မယ်';
+  micBtn.classList.add('listening');micLabel.textContent='နားထောင်နေသည်… ပြောပြီးရင် မိုက်ခရိုဖုန်းကို ထပ်နှိပ်ပါ (၁၅ စက္ကန့်အတွင်း အလိုအလျောက် ရပ်မယ်)';
   var finalText='';
+  var listenTimer=setTimeout(function(){try{rec.stop()}catch(e){}},15000);
   rec.onresult=function(e){
     var interim='';
     for(var i=e.resultIndex;i<e.results.length;i++){
       if(e.results[i].isFinal)finalText+=e.results[i][0].transcript;
       else interim+=e.results[i][0].transcript;
     }
-    micLabel.textContent=interim?('ကြားနေသည်: '+interim):'နားထောင်နေသည်…';
+    micLabel.textContent=interim?('ကြားနေသည်: '+interim):'နားထောင်နေသည်… ပြောပြီးရင် မိုက်ခရိုဖုန်းကို ထပ်နှိပ်ပါ';
     if(finalText)textEl.value=finalText;
   };
   rec.onerror=function(e){
-    micBtn.classList.remove('listening');
-    if(e.error==='not-allowed')micLabel.textContent='မိုက်ခရိုဖုန်း ခွင့်မပြုသေးဘူး — browser က ခွင့်ပြုပေးပါ။';
-    else if(e.error==='no-speech')micLabel.textContent='အသံမကြားရဘူး — ထပ်နှိပ်ပြီး ပြောပါ။';
-    else micLabel.textContent='အသံနားထောင်တာ အဆင်မပြေဘူး ('+e.error+') — စာရိုက်မေးလို့ရတယ်။';
+    clearTimeout(listenTimer);micBtn.classList.remove('listening');
+    var msg='';
+    if(e.error==='not-allowed'||e.error==='service-not-allowed')msg='မိုက်ခရိုဖုန်း ခွင့်မပြုသေးဘူး — Chrome ရဲ့ mic ခွင့်ပြုချက်ကို Allow လုပ်ပေးပါ။';
+    else if(e.error==='no-speech')msg='အသံမကြားရဘူး — ထပ်နှိပ်ပြီး တိုတိုလေး ပြောကြည့်ပါ။';
+    else if(e.error==='network')msg='အသံနားထောင်ဖို့ အင်တာနက်လိုတယ် — အင်တာနက်ပျက်နေပုံရတယ်။ စာရိုက်မေးလို့ရတယ်။';
+    else if(e.error==='language-not-supported')msg='ဒီဖုန်းမှာ မြန်မာအသံနားထောင်စနစ် မရှိဘူး — စာရိုက်မေးပါ။';
+    else msg='အသံနားထောင်တာ အဆင်မပြေဘူး ('+e.error+') — စာရိုက်မေးလို့ရတယ်။';
+    micLabel.textContent=msg;addMsg('ai',msg);
   };
   rec.onend=function(){
-    micBtn.classList.remove('listening');micLabel.textContent='မိုက်ခရိုဖုန်းကိုနှိပ်ပြီး မြန်မာလိုပြောပါ';
+    clearTimeout(listenTimer);micBtn.classList.remove('listening');micLabel.textContent='မိုက်ခရိုဖုန်းကိုနှိပ်ပြီး မြန်မာလိုပြောပါ';
     if(finalText.trim())handleUser(finalText.trim());
+    else addMsg('ai','အသံကို စာအဖြစ် မပြောင်းနိုင်ဘူး — ထပ်နှိပ်ပြီး တိုတိုလေး ပြောကြည့်ပါ၊ ဒါမှမဟုတ် အောက်က စာရိုက်ပြီး မေးပါ။');
   };
   try{rec.start()}catch(e){micBtn.classList.remove('listening');}
 }
