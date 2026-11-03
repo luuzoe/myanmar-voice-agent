@@ -7,9 +7,12 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:"Noto Sans Myanmar","Myanmar Text",system-ui,sans-serif;background:#fff7ed;color:#1f2937}
-header{background:#7c2d12;color:#fff;padding:16px;text-align:center}
-header h1{margin:0;font-size:22px}
-header p{margin:6px 0 0;font-size:14px;opacity:.9}
+header{background:#7c2d12;color:#fff;padding:14px 12px 12px}
+header h1{margin:0;font-size:21px}
+header p{margin:6px 0 0;font-size:13px;opacity:.9;text-align:center}
+.hrow{display:flex;align-items:center;gap:8px}
+.htitle{flex:1;text-align:center}
+.hspacer{width:44px;flex-shrink:0}
 main{max-width:720px;margin:0 auto;padding:12px 12px 140px}
 #status{background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.6}
 #chat{display:flex;flex-direction:column;gap:10px;margin-top:12px}
@@ -34,41 +37,80 @@ main{max-width:720px;margin:0 auto;padding:12px 12px 140px}
 h3{font-size:16px}
 body.font-small .msg{font-size:14px}
 body.font-large .msg{font-size:19px}
-.menuBtn{position:absolute;left:12px;top:14px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);color:#fff;font-size:24px;border-radius:10px;padding:4px 10px;cursor:pointer}
-header{position:relative}
+.menuBtn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45);color:#fff;font-size:22px;border-radius:11px;padding:5px 10px;cursor:pointer;flex-shrink:0}
 #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40}
 #overlay.show{display:block}
-#drawer{position:fixed;top:0;left:-340px;width:86%;max-width:320px;height:100%;background:#fff;z-index:50;overflow-y:auto;transition:left .25s;padding:16px 16px 120px;box-shadow:4px 0 20px rgba(0,0,0,.25)}
+#drawer{position:fixed;top:0;left:-350px;width:86%;max-width:330px;height:100%;background:#fdf8f2;z-index:50;overflow-y:auto;transition:left .25s;padding:0 0 40px;box-shadow:4px 0 24px rgba(0,0,0,.28);border-top-right-radius:20px;border-bottom-right-radius:20px}
 #drawer.open{left:0}
-#drawer h2{margin:4px 0 12px;font-size:20px}
-#drawer h3{margin:18px 0 8px}
-#drawer .row{margin:10px 0;font-size:15px;line-height:1.6}
-#drawer select,#drawer input[type=range]{width:100%;padding:9px;border:1px solid #d6d3d1;border-radius:10px;background:#fff}
-#drawer button.dbtn{width:100%;padding:11px;border-radius:12px;border:1px solid #d6d3d1;background:#fff7ed;font-size:15px;margin:6px 0}
-#closeDrawer{float:right;background:#fff;border:1px solid #d6d3d1;border-radius:10px;padding:6px 10px;font-size:16px}
+.dhead{background:#7c2d12;color:#fff;padding:18px 16px 16px;display:flex;gap:12px;align-items:center;border-top-right-radius:20px}
+.davatar{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.dhead h2{margin:0;font-size:19px}
+.dhead p{margin:3px 0 0;font-size:13px;opacity:.85}
+#closeDrawer{margin-left:auto;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:10px;padding:6px 10px;font-size:15px;flex-shrink:0}
+.dsec{margin:14px 12px 0;background:#fff;border:1px solid #eee6da;border-radius:16px;padding:14px}
+.dsec h3{margin:0 0 6px;font-size:14px;color:#7c2d12}
+.drow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-top:1px solid #f3ede3;font-size:15px}
+.drow:first-of-type{border-top:none}
+.drow small{color:#78716c;font-size:12px;line-height:1.5}
+#drawer select{width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;background:#fff;font-size:15px}
+#drawer input[type=range]{width:100%}
+#drawer button.dbtn{display:block;width:100%;text-align:left;padding:12px;border-radius:12px;border:1px solid #e7e5e4;background:#fff;font-size:15px;margin:8px 0 0;cursor:pointer}
+ul.dlist{margin:6px 0 0;padding-left:18px;line-height:1.85;font-size:14px}
+ul.dlist li{margin:2px 0}
 </style>
 </head>
 <body>
 <header>
+<div class="hrow">
 <button class="menuBtn" id="menuBtn" aria-label="Menu">☰</button>
-<h1>🎙️ Zoe Lay AI Agent</h1>
+<div class="htitle"><h1>🎙️ Zoe Lay AI Agent</h1></div>
+<div class="hspacer"></div>
+</div>
 <p>မြန်မာလိုပြော၊ မြန်မာလိုဖြေ — မေးလို့လည်းရ၊ ခိုင်းလို့လည်းရ</p>
 </header>
 <div id="overlay"></div>
 <aside id="drawer">
-<button id="closeDrawer">✕ ပိတ်</button>
-<h2>☰ Menu</h2>
+<div class="dhead">
+<div class="davatar">🎙️</div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V1.4</p></div>
+<button id="closeDrawer">✕</button>
+</div>
+<section class="dsec">
 <h3>⚙️ Settings</h3>
-<div class="row"><label><input type="checkbox" id="autospeak" checked> အသံနဲ့ပြန်ပြော</label></div>
-<div class="row"><label><input type="checkbox" id="handsfree"> ဆက်တိုက်ပြော (hands-free)</label></div>
-<div class="row">အသံ ရွေးပါ<br><select id="voiceSel"><option value="">အသံ ရွေးနေသည်…</option></select><br><small>ဖုန်းမှာ မြန်မာအသံ မရှိရင် Google မြန်မာအသံနဲ့ အလိုအလျောက် ပြောပေးမယ်။</small></div>
-<div class="row">အသံမြန်နှုန်း: <span id="rateVal">1.0</span><br><input type="range" id="rateSel" min="0.8" max="1.3" step="0.1" value="1"></div>
-<div class="row">စာလုံးအရွယ်<br><select id="fontSel"><option value="normal">ပုံမှန်</option><option value="small">သေး</option><option value="large">ကြီး</option></select></div>
-<div class="row"><button class="dbtn" id="testVoiceBtn">🔊 အသံစမ်းကြည့်</button><button class="dbtn" id="stopBtn">⏹ အသံရပ်</button><button class="dbtn" id="clearChatBtn">🗑️ စကားပြောခန်း ရှင်း</button><button class="dbtn" id="clearNotesBtn">🗑️ မှတ်စုတွေ ရှင်း</button></div>
-<h3>သုံးနည်း</h3>
-<div class="row">၁။ မိုက်ခရိုဖုန်းနှိပ် → မြန်မာလိုပြော → ပြောပြီးရင် မိုက်ခရိုဖုန်းထပ်နှိပ်။<br>၂။ အသံမကြားရရင် “အသံစမ်းကြည့်” နှိပ်ပါ — အသံထွက်လား အရင်စမ်းပါ။<br>၃။ အသံနဲ့မရရင် အောက်က စာရိုက်ပြီး မေးလို့ရတယ်။</div>
-<h3>ဒီ Agent က ဘာလုပ်နိုင်လဲ (V1)</h3>
-<div class="row"><b>မေးခွန်းဖြေတာ</b> — အထွေထွေဗဟုသုတ၊ ရှင်းပြတာ၊ ဘာသာပြန်၊ စာရေးပေးတာ၊ တွက်ချက်တာ။<br><b>ခိုင်းတာလုပ်တာ</b> — အချိန်/နေ့စွဲ ပြောတာ၊ မှတ်စုမှတ်တာ/ပြတာ၊ ဝဘ်ရှာဖွေဖွင့်ပေးတာ၊ မိနစ်ပိုင်းအတွင်း သတိပေးတာ။<br>ဥပမာ — “စျေးဝယ်စာရင်းထဲ ကြက်ဥထည့်ထား”၊ “၅ မိနစ်ကြာရင် သတိပေး”၊ “နေပြည်တော်အကြောင်း ရှာပေး” လို့ပြောပါ။<br><b>မရသေးတာ</b> — ဖုန်းထဲက App တွေဖွင့်/စာပို့တာ၊ Facebook/Telegram ပို့တာ၊ တိုက်ရိုက်ရွှေဈေး/သတင်းအချိန်နဲ့တပြေးညီ ပြောတာတွေက နောက်ဗားရှင်းမှ လိုပါတယ်။ အဲ့တာတွေမေးရင် Agent က ခန့်မှန်းမဖြေဘဲ မသိဘူးလို့ ပြောပါမယ်။</div>
+<div class="drow"><span>အသံနဲ့ပြန်ပြော</span><input type="checkbox" id="autospeak" checked></div>
+<div class="drow"><span>ဆက်တိုက်ပြော (hands-free)</span><input type="checkbox" id="handsfree"></div>
+<div class="drow" style="display:block"><span>အသံ ရွေးပါ</span><select id="voiceSel" style="margin-top:8px"><option value="">အသံ ရွေးနေသည်…</option></select><br><small>ဖုန်းမှာ မြန်မာအသံ မရှိရင် Google မြန်မာအသံနဲ့ အလိုအလျောက် ပြောပေးမယ်။</small></div>
+<div class="drow" style="display:block"><span>အသံမြန်နှုန်း: <b id="rateVal">1.0</b></span><input type="range" id="rateSel" min="0.8" max="1.3" step="0.1" value="1" style="margin-top:8px"></div>
+<div class="drow" style="display:block"><span>စာလုံးအရွယ်</span><select id="fontSel" style="margin-top:8px"><option value="normal">ပုံမှန်</option><option value="small">သေး</option><option value="large">ကြီး</option></select></div>
+</section>
+<section class="dsec">
+<h3>🎛️ လုပ်ဆောင်ချက်များ</h3>
+<button class="dbtn" id="testVoiceBtn">🔊 &nbsp;အသံစမ်းကြည့်</button>
+<button class="dbtn" id="stopBtn">⏹ &nbsp;အသံရပ်</button>
+<button class="dbtn" id="clearChatBtn">🗑️ &nbsp;စကားပြောခန်း ရှင်း</button>
+<button class="dbtn" id="clearNotesBtn">🗑️ &nbsp;မှတ်စုတွေ ရှင်း</button>
+</section>
+<section class="dsec">
+<h3>📖 သုံးနည်း</h3>
+<ul class="dlist">
+<li>မိုက်ခရိုဖုန်းနှိပ် → မြန်မာလိုပြော → ထပ်နှိပ်</li>
+<li>အသံမထွက်ရင် “အသံစမ်းကြည့်” အရင်နှိပ်ပါ</li>
+<li>အသံနဲ့မရရင် စာရိုက်ပြီး မေးလို့ရတယ်</li>
+</ul>
+</section>
+<section class="dsec">
+<h3>✨ ဘာလုပ်နိုင်လဲ</h3>
+<ul class="dlist">
+<li>မေးခွန်းဖြေ၊ ရှင်းပြ၊ ဘာသာပြန်၊ စာရေး၊ တွက်ချက်</li>
+<li>အချိန်/နေ့စွဲ ပြော၊ မှတ်စုမှတ်/ပြ၊ ဝဘ်ရှာ၊ သတိပေး</li>
+<li>ဥပမာ: “စျေးဝယ်စာရင်းထဲ ကြက်ဥထည့်ထား”</li>
+</ul>
+<h3 style="margin-top:14px">🚫 မရသေးတာ</h3>
+<ul class="dlist">
+<li>ဖုန်း App ဖွင့်/စာပို့တာ၊ Facebook/Telegram ပို့တာ</li>
+<li>တိုက်ရိုက်ရွှေဈေး/သတင်း — ခန့်မှန်းမဖြေဘဲ မသိဘူးလို့ ပြောမယ်</li>
+</ul>
+</section>
 </aside>
 <main>
 <div id="status">စစ်နေသည်…</div>
@@ -233,6 +275,7 @@ function startListen(){
     if(finalText)textEl.value=finalText;
   };
   rec.onerror=function(e){
+    if(e.error==='aborted'){setTimeout(finish,300);return;}
     var msg='';
     if(e.error==='not-allowed'||e.error==='service-not-allowed')msg='မိုက်ခရိုဖုန်း ခွင့်မပြုသေးဘူး — Chrome ရဲ့ mic ခွင့်ပြုချက်ကို Allow လုပ်ပေးပါ။';
     else if(e.error==='no-speech')msg='အသံမကြားရဘူး — ထပ်နှိပ်ပြီး တိုတိုလေး ပြောကြည့်ပါ။';
