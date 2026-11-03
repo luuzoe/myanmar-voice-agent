@@ -70,13 +70,13 @@ ul.dlist li{margin:2px 0}
 <div class="htitle"><h1>🎙️ Zoe Lay AI Agent</h1></div>
 <div class="hspacer"></div>
 </div>
-<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V4.0</p>
+<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V5.0</p>
 </header>
 <div id="overlay"></div>
 <aside id="drawer">
 <div class="dhead">
 <div class="davatar">🎙️</div>
-<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V4.0</p></div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V5.0</p></div>
 <button id="closeDrawer">✕</button>
 </div>
 <section class="dsec">
@@ -164,6 +164,7 @@ try{notes=JSON.parse(localStorage.getItem('zoelay_notes')||'[]')}catch(e){notes=
 function saveNotes(){try{localStorage.setItem('zoelay_notes',JSON.stringify(notes))}catch(e){}}
 function addMsg(who,text){
   var d=document.createElement('div');d.className='msg '+(who==='me'?'me':'ai');
+  if(who==='ai'){d.style.cursor='pointer';d.title='နှိပ်ပြီး အသံနဲ့ နားထောင်မယ်';d.onclick=function(){speak(text,true);};}
   d.textContent=text;
   var s=document.createElement('small');s.textContent=who==='me'?'မင်း':'Zoe Lay';
   d.appendChild(s);chatEl.appendChild(d);window.scrollTo(0,document.body.scrollHeight);
@@ -208,22 +209,34 @@ function stopSpeak(){
   if(curAudio){try{curAudio.pause()}catch(e){}curAudio=null;}
 }
 document.getElementById('stopBtn').onclick=stopSpeak;
-document.getElementById('testVoiceBtn').onclick=function(){speak('မင်္ဂလာပါ၊ ဒီအသံကို ကြားရလား။')};
-function speakGoogle(text,ondone){
+document.getElementById('testVoiceBtn').onclick=function(){speak('မင်္ဂလာပါ၊ ဒီအသံကို ကြားရလား။',true)};
+function speakGoogle(text,ondone,onfail){
   var parts=text.match(/[^။.!?\n]{1,170}[။.!?\n]?/g)||[text];
-  var idx=0;
+  var idx=0;var failed=0;
   function next(){
-    if(idx>=parts.length){if(ondone)ondone();return;}
+    if(idx>=parts.length){if(failed===parts.length&&onfail)onfail();else if(ondone)ondone();return;}
     var a=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&tl=my&client=tw-ob&q='+encodeURIComponent(parts[idx]));
     curAudio=a;
     a.onended=function(){idx++;next();};
-    a.onerror=function(){idx++;next();};
-    var pr=a.play();if(pr&&pr.catch)pr.catch(function(){idx++;next();});
+    a.onerror=function(){failed++;idx++;next();};
+    var pr=a.play();if(pr&&pr.catch)pr.catch(function(){failed++;idx++;next();});
   }
   next();
 }
-function speak(text){
-  if(!autoSpeak.checked)return;
+function speakPollinations(text,ondone){
+  var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
+  if(!ptoken){if(ondone)ondone();return;}
+  fetch('https://gen.pollinations.ai/v1/audio/speech',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:'openai/tts-1',input:text.slice(0,1000),voice:'alloy',response_format:'mp3'})})
+  .then(function(r){if(!r.ok)throw new Error('tts '+r.status);return r.blob()})
+  .then(function(b){
+    var url=URL.createObjectURL(b);var a=new Audio(url);curAudio=a;
+    a.onended=function(){if(ondone)ondone();};
+    a.onerror=function(){if(ondone)ondone();};
+    var pr=a.play();if(pr&&pr.catch)pr.catch(function(){if(ondone)ondone();});
+  }).catch(function(){if(ondone)ondone();});
+}
+function speak(text,force){
+  if(!force&&!autoSpeak.checked)return;
   stopSpeak();
   if(hasMyVoice()&&('speechSynthesis' in window)){
     var parts=text.match(/[^။.!?\n]{1,180}[။.!?\n]?/g)||[text];
@@ -231,7 +244,7 @@ function speak(text){
     function next(){
       if(idx>=parts.length){if(handsfree.checked){setTimeout(startListen,700);}return;}
       var u=new SpeechSynthesisUtterance(parts[idx]);
-      var chosen=voices.filter(function(v){return v.name===voiceSel.value})[0];
+      var chosen=voices.filter(function(v){return v.name===voiceSel.value&&(v.lang||'').toLowerCase().indexOf('my')===0})[0];
       if(chosen)u.voice=chosen;
       else{var my=voices.filter(function(v){return (v.lang||'').toLowerCase().indexOf('my')===0})[0];if(my)u.voice=my;}
       u.lang=(u.voice&&u.voice.lang)||'my-MM';u.rate=voiceRate;u.pitch=1;
@@ -241,7 +254,11 @@ function speak(text){
     }
     next();
   } else {
-    speakGoogle(text,function(){if(handsfree.checked){setTimeout(startListen,700);}});
+    speakGoogle(text,function(){if(handsfree.checked){setTimeout(startListen,700);}},function(){
+      var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
+      if(ptoken){speakPollinations(text,function(){if(handsfree.checked){setTimeout(startListen,700);}});}
+      else{addMsg('ai','အသံကို ဖွင့်လို့မရဘူး — Google အသံ ပိတ်နေပုံရတယ်။ Pollinations Token ထည့်ထားရင် အဲ့အသံနဲ့ ထပ်ကြိုးစားပေးမယ်။');}
+    });
   }
 }
 // ---------- STT (with hard watchdog: mic MUST stop at 15s) ----------
