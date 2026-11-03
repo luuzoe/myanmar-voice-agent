@@ -72,11 +72,13 @@ ul.dlist li{margin:2px 0}
 <aside id="drawer">
 <div class="dhead">
 <div class="davatar">🎙️</div>
-<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V1.4</p></div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V1.5</p></div>
 <button id="closeDrawer">✕</button>
 </div>
 <section class="dsec">
 <h3>⚙️ Settings</h3>
+<div class="drow" style="display:block"><span>AI ဦးနှောက် ရွေးပါ</span><select id="providerSel" style="margin-top:8px"><option value="pollinations">Pollinations (အခမဲ့, key မလို)</option><option value="claude">Muse / Claude (key လို, ပေးဆောင်ရ)</option></select></div>
+<div class="drow" style="display:block" id="claudeKeyRow"><span>Claude API Key (ဖုန်းထဲမှာပဲ သိမ်းမယ်)</span><input id="claudeKey" type="password" placeholder="sk-ant-..." style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"><br><small>Key ကို website code ထဲမှာ မထည့်ဘူး၊ မင်းဖုန်းရဲ့ browser ထဲမှာပဲ ရှိမယ်။</small></div>
 <div class="drow"><span>အသံနဲ့ပြန်ပြော</span><input type="checkbox" id="autospeak" checked></div>
 <div class="drow"><span>ဆက်တိုက်ပြော (hands-free)</span><input type="checkbox" id="handsfree"></div>
 <div class="drow" style="display:block"><span>အသံ ရွေးပါ</span><select id="voiceSel" style="margin-top:8px"><option value="">အသံ ရွေးနေသည်…</option></select><br><small>ဖုန်းမှာ မြန်မာအသံ မရှိရင် Google မြန်မာအသံနဲ့ အလိုအလျောက် ပြောပေးမယ်။</small></div>
@@ -145,6 +147,10 @@ var rateVal=document.getElementById('rateVal');
 var fontSel=document.getElementById('fontSel');
 var voiceRate=1;
 var savedVoice='';
+var providerSel=document.getElementById('providerSel');
+var claudeKeyEl=document.getElementById('claudeKey');
+var claudeKeyRow=document.getElementById('claudeKeyRow');
+function updateKeyRow(){if(claudeKeyRow)claudeKeyRow.style.display=(providerSel.value==='claude')?'block':'none';}
 try{
   var _s=JSON.parse(localStorage.getItem('zoelay_settings')||'{}');
   if(_s.auto!==undefined)autoSpeak.checked=_s.auto;
@@ -152,9 +158,13 @@ try{
   if(_s.rate){voiceRate=_s.rate;rateSel.value=_s.rate;rateVal.textContent=_s.rate;}
   if(_s.font){fontSel.value=_s.font;document.body.classList.remove('font-small','font-large');if(_s.font!=='normal')document.body.classList.add('font-'+_s.font);}
   if(_s.voice)savedVoice=_s.voice;
+  if(_s.provider)providerSel.value=_s.provider;
+  var _k=localStorage.getItem('zoelay_claude_key')||'';if(_k)claudeKeyEl.value=_k;
 }catch(e){}
+updateKeyRow();
 function saveSettings(){
-  try{localStorage.setItem('zoelay_settings',JSON.stringify({auto:autoSpeak.checked,hands:handsfree.checked,rate:voiceRate,font:fontSel.value,voice:voiceSel.value}))}catch(e){}
+  try{localStorage.setItem('zoelay_settings',JSON.stringify({auto:autoSpeak.checked,hands:handsfree.checked,rate:voiceRate,font:fontSel.value,voice:voiceSel.value,provider:providerSel.value}))}catch(e){}
+  try{localStorage.setItem('zoelay_claude_key',claudeKeyEl.value.trim())}catch(e){}
 }
 var history=[];
 var notes=[];
@@ -345,9 +355,26 @@ function handleLocal(q){
   }
   return null;
 }
-// ---------- Brain (free, no key) ----------
+// ---------- Brain: Pollinations (free) or Muse/Claude (local key) ----------
 function askBrain(q){
-  var msgs=[{role:'system',content:'You are Zoe Lay, a friendly Burmese AI assistant. Answer ONLY in Burmese (Myanmar script) unless the user asks in another language. Keep answers voice-friendly and concise: usually 2-4 short sentences, longer only for explanations. If you do not know something, or it needs live prices, live news or live scores, say clearly that you do not have live data and do not invent numbers, dates or results.'}];
+  var sys='You are Zoe Lay, a friendly Burmese AI assistant. Answer ONLY in Burmese (Myanmar script) unless the user asks in another language. Keep answers voice-friendly and concise: usually 2-4 short sentences, longer only for explanations. If you do not know something, or it needs live prices, live news or live scores, say clearly that you do not have live data and do not invent numbers, dates or results.';
+  if(providerSel.value==='claude'){
+    var key=(claudeKeyEl.value||'').trim();
+    if(!key){
+      var e=new Error('no-claude-key');
+      e.userMessage='Muse / Claude ကို ရွေးထားပေမယ့် API key မထည့်ရသေးဘူး — ☰ Menu > Settings ထဲမှာ Claude API key (sk-ant-...) ထည့်ပါ။ Key မရှိရင် Pollinations (အခမဲ့) ကို ပြန်ရွေးပါ။';
+      return Promise.reject(e);
+    }
+    var cmsgs=[];history.slice(-6).forEach(function(h){cmsgs.push(h)});cmsgs.push({role:'user',content:q});
+    return fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:600,system:sys,messages:cmsgs})})
+    .then(function(r){if(!r.ok)throw new Error('claude '+r.status);return r.json()})
+    .then(function(j){
+      var t='';if(j.content){j.content.forEach(function(c){if(c.type==='text')t+=c.text;});}
+      t=t.trim();if(!t)throw new Error('empty');
+      return t;
+    });
+  }
+  var msgs=[{role:'system',content:sys}];
   history.slice(-6).forEach(function(h){msgs.push(h)});
   msgs.push({role:'user',content:q});
   return fetch('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:msgs})})
@@ -368,8 +395,8 @@ function handleUser(q){
   askBrain(q).then(function(ans){
     thinking.textContent=ans;var s=document.createElement('small');s.textContent='Zoe Lay';thinking.appendChild(s);
     speak(ans);history.push({role:'user',content:q},{role:'assistant',content:ans});
-  }).catch(function(){
-    var msg='စိတ်မကောင်းပါဘူး၊ အခု AI ဦးနှောက်ကို ဆက်သွယ်လို့မရဘူး။ အင်တာနက်စစ်ပြီး ထပ်မေးကြည့်ပါ။ အချိန်၊ မှတ်စု၊ ရှာဖွေတာလောက်တော့ အင်တာနက်မလိုဘဲ လုပ်ပေးလို့ရတယ်။';
+  }).catch(function(err){
+    var msg=(err&&err.userMessage)?err.userMessage:'စိတ်မကောင်းပါဘူး၊ အခု AI ဦးနှောက်ကို ဆက်သွယ်လို့မရဘူး။ အင်တာနက်စစ်ပြီး ထပ်မေးကြည့်ပါ။ အချိန်၊ မှတ်စု၊ ရှာဖွေတာလောက်တော့ အင်တာနက်မလိုဘဲ လုပ်ပေးလို့ရတယ်။';
     thinking.textContent=msg;var s=document.createElement('small');s.textContent='Zoe Lay';thinking.appendChild(s);
     speak(msg);
   });
@@ -384,6 +411,8 @@ document.getElementById('menuBtn').onclick=openDrawer;
 document.getElementById('closeDrawer').onclick=closeDrawer;
 document.getElementById('overlay').onclick=closeDrawer;
 autoSpeak.onchange=saveSettings;handsfree.onchange=saveSettings;voiceSel.onchange=saveSettings;
+providerSel.onchange=function(){updateKeyRow();saveSettings();};
+claudeKeyEl.onchange=saveSettings;claudeKeyEl.oninput=saveSettings;
 rateSel.oninput=function(){voiceRate=parseFloat(rateSel.value);rateVal.textContent=rateSel.value;saveSettings();};
 fontSel.onchange=function(){document.body.classList.remove('font-small','font-large');if(fontSel.value!=='normal')document.body.classList.add('font-'+fontSel.value);saveSettings();};
 document.getElementById('clearChatBtn').onclick=function(){chatEl.innerHTML='';addMsg('ai','မင်္ဂလာပါ၊ ကျွန်မက Zoe Lay ပါ။ မိုက်ခရိုဖုန်းနှိပ်ပြီး မြန်မာလိုပြောပါ။');closeDrawer();};
