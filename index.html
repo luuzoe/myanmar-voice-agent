@@ -195,16 +195,34 @@ function speak(text){
     speakGoogle(text,function(){if(handsfree.checked){setTimeout(startListen,700);}});
   }
 }
-// ---------- STT ----------
+// ---------- STT (with hard watchdog: mic MUST stop at 15s) ----------
 var rec=null;
+var curFinish=null;
 function startListen(){
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){addMsg('ai','ဒီ browser မှာ အသံဖမ်းစနစ် မရှိဘူး။ Chrome နဲ့ဖွင့်ပြီး စာရိုက်မေးပါ။');return;}
-  if(rec){try{rec.stop()}catch(e){}}
+  if(rec){try{rec.abort()}catch(e){}}
   rec=new SR();rec.lang='my-MM';rec.interimResults=true;rec.continuous=false;
-  micBtn.classList.add('listening');micLabel.textContent='နားထောင်နေသည်… ပြောပြီးရင် မိုက်ခရိုဖုန်းကို ထပ်နှိပ်ပါ (၁၅ စက္ကန့်အတွင်း အလိုအလျောက် ရပ်မယ်)';
+  micBtn.classList.add('listening');micLabel.textContent='နားထောင်နေသည်… ပြောပြီးရင် မိုက်ခရိုဖုန်းကို ထပ်နှိပ်ပါ (၁၅ စက္ကန့်ပြည့်ရင် ရပ်ကိုရပ်မယ်)';
   var finalText='';
-  var listenTimer=setTimeout(function(){try{rec.stop()}catch(e){}},15000);
+  var done=false;
+  var timer1=null,timer2=null;
+  function finish(){
+    if(done)return;done=true;
+    clearTimeout(timer1);clearTimeout(timer2);
+    micBtn.classList.remove('listening');micLabel.textContent='မိုက်ခရိုဖုန်းကိုနှိပ်ပြီး မြန်မာလိုပြောပါ';
+    curFinish=null;rec=null;
+    if(finalText.trim())handleUser(finalText.trim());
+    else addMsg('ai','အသံကို စာအဖြစ် မပြောင်းနိုင်ဘူး — ထပ်နှိပ်ပြီး တိုတိုလေး ပြောကြည့်ပါ၊ ဒါမှမဟုတ် အောက်က စာရိုက်ပြီး မေးပါ။');
+  }
+  curFinish=function(){
+    try{rec.abort()}catch(e){}
+    timer2=setTimeout(finish,800);
+  };
+  timer1=setTimeout(function(){
+    try{rec.abort()}catch(e){}
+    timer2=setTimeout(finish,800);
+  },15000);
   rec.onresult=function(e){
     var interim='';
     for(var i=e.resultIndex;i<e.results.length;i++){
@@ -215,23 +233,20 @@ function startListen(){
     if(finalText)textEl.value=finalText;
   };
   rec.onerror=function(e){
-    clearTimeout(listenTimer);micBtn.classList.remove('listening');
     var msg='';
     if(e.error==='not-allowed'||e.error==='service-not-allowed')msg='မိုက်ခရိုဖုန်း ခွင့်မပြုသေးဘူး — Chrome ရဲ့ mic ခွင့်ပြုချက်ကို Allow လုပ်ပေးပါ။';
     else if(e.error==='no-speech')msg='အသံမကြားရဘူး — ထပ်နှိပ်ပြီး တိုတိုလေး ပြောကြည့်ပါ။';
     else if(e.error==='network')msg='အသံနားထောင်ဖို့ အင်တာနက်လိုတယ် — အင်တာနက်ပျက်နေပုံရတယ်။ စာရိုက်မေးလို့ရတယ်။';
     else if(e.error==='language-not-supported')msg='ဒီဖုန်းမှာ မြန်မာအသံနားထောင်စနစ် မရှိဘူး — စာရိုက်မေးပါ။';
     else msg='အသံနားထောင်တာ အဆင်မပြေဘူး ('+e.error+') — စာရိုက်မေးလို့ရတယ်။';
-    micLabel.textContent=msg;addMsg('ai',msg);
+    micLabel.textContent=msg;
+    if(!done){addMsg('ai',msg);}
+    setTimeout(finish,300);
   };
-  rec.onend=function(){
-    clearTimeout(listenTimer);micBtn.classList.remove('listening');micLabel.textContent='မိုက်ခရိုဖုန်းကိုနှိပ်ပြီး မြန်မာလိုပြောပါ';
-    if(finalText.trim())handleUser(finalText.trim());
-    else addMsg('ai','အသံကို စာအဖြစ် မပြောင်းနိုင်ဘူး — ထပ်နှိပ်ပြီး တိုတိုလေး ပြောကြည့်ပါ၊ ဒါမှမဟုတ် အောက်က စာရိုက်ပြီး မေးပါ။');
-  };
-  try{rec.start()}catch(e){micBtn.classList.remove('listening');}
+  rec.onend=function(){finish();};
+  try{rec.start()}catch(e){micBtn.classList.remove('listening');finish();}
 }
-micBtn.onclick=function(){if(micBtn.classList.contains('listening')){try{rec.stop()}catch(e){}}else{stopSpeak();startListen();}};
+micBtn.onclick=function(){if(micBtn.classList.contains('listening')&&curFinish){curFinish();}else{stopSpeak();startListen();}};
 // ---------- Local tasks ----------
 var MY={'၀':'0','၁':'1','၂':'2','၃':'3','၄':'4','၅':'5','၆':'6','၇':'7','၈':'8','၉':'9'};
 function toArabic(s){return s.replace(/[၀-၉]/g,function(c){return MY[c]})}
