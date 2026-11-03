@@ -70,13 +70,13 @@ ul.dlist li{margin:2px 0}
 <div class="htitle"><h1>🎙️ Zoe Lay AI Agent</h1></div>
 <div class="hspacer"></div>
 </div>
-<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V8.0</p>
+<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V9.0</p>
 </header>
 <div id="overlay"></div>
 <aside id="drawer">
 <div class="dhead">
 <div class="davatar">🎙️</div>
-<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V8.0</p></div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V9.0</p></div>
 <button id="closeDrawer">✕</button>
 </div>
 <section class="dsec">
@@ -224,17 +224,18 @@ function speakGoogle(text,ondone,onfail){
   }
   next();
 }
-function speakPollinations(text,ondone){
+function speakPollinations(text,ondone,onfail){
   var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
-  if(!ptoken){if(ondone)ondone();return;}
-  fetch('https://gen.pollinations.ai/v1/audio/speech',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:'openai/tts-1',input:text.slice(0,1000),voice:'alloy',response_format:'mp3'})})
+  if(!ptoken){if(onfail)onfail();else if(ondone)ondone();return;}
+  fetchTimeout('https://gen.pollinations.ai/v1/audio/speech',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:'openai/tts-1',input:text.slice(0,1000),voice:'alloy',response_format:'mp3'})},20000)
   .then(function(r){if(!r.ok)throw new Error('tts '+r.status);return r.blob()})
   .then(function(b){
+    if(!b||b.size<1000)throw new Error('tts small');
     var url=URL.createObjectURL(b);var a=new Audio(url);curAudio=a;
     a.onended=function(){if(ondone)ondone();};
-    a.onerror=function(){if(ondone)ondone();};
-    var pr=a.play();if(pr&&pr.catch)pr.catch(function(){if(ondone)ondone();});
-  }).catch(function(){if(ondone)ondone();});
+    a.onerror=function(){if(onfail)onfail();};
+    var pr=a.play();if(pr&&pr.catch)pr.catch(function(){if(onfail)onfail();});
+  }).catch(function(){if(onfail)onfail();});
 }
 function speak(text,force){
   if(!force&&!autoSpeak.checked)return;
@@ -255,11 +256,14 @@ function speak(text,force){
     }
     next();
   } else {
-    speakGoogle(text,function(){if(handsfree.checked){setTimeout(startListen,700);}},function(){
-      var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
-      if(ptoken){speakPollinations(text,function(){if(handsfree.checked){setTimeout(startListen,700);}});}
-      else{addMsg('ai','အသံကို ဖွင့်လို့မရဘူး — Google အသံ ပိတ်နေပုံရတယ်။ Pollinations Token ထည့်ထားရင် အဲ့အသံနဲ့ ထပ်ကြိုးစားပေးမယ်။');}
-    });
+    var ptoken2=(pollTokenEl&&pollTokenEl.value||'').trim();
+    if(ptoken2){
+      speakPollinations(text,function(){if(handsfree.checked){setTimeout(startListen,700);}},function(){
+        speakGoogle(text,function(){if(handsfree.checked){setTimeout(startListen,700);}},function(){addMsg('ai','အသံကို ဖွင့်လို့မရဘူး — Google အသံရော Pollinations အသံရော မရဘူး။');});
+      });
+    } else {
+      speakGoogle(text,function(){if(handsfree.checked){setTimeout(startListen,700);}},function(){addMsg('ai','အသံကို ဖွင့်လို့မရဘူး — Google အသံ ပိတ်နေတယ်။ Pollinations Token ထည့်ထားရင် အဲ့အသံနဲ့ ပြောပေးမယ်။');});
+    }
   }
 }
 // ---------- STT (with hard watchdog: mic MUST stop at 15s) ----------
@@ -573,26 +577,26 @@ var diagBtn=document.getElementById('diagBtn');
 if(diagBtn){
 diagBtn.onclick=function(){
   var th=addMsg('ai','စစ်နေသည်…');
-  var results=[];
+  var results=['','','',''];
   function run(){
     var p1=fetchTimeout('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:[{role:'user',content:'Hi'}]})},10000)
-      .then(function(r){return r.text();}).then(function(){results.push('✅ အခမဲ့ AI (Pollinations) ရတယ်');}).catch(function(){results.push('❌ အခမဲ့ AI မရဘူး');});
+      .then(function(r){return r.text();}).then(function(){results[0]='✅ အခမဲ့ AI (Pollinations) ရတယ်';}).catch(function(){results[0]='❌ အခမဲ့ AI မရဘူး';});
     var p2=fetchTimeout('https://data-api.binance.vision/api/v3/ticker/price?symbol=PAXGUSDT',{},10000)
-      .then(function(r){return r.json();}).then(function(j){results.push('✅ ရွှေဈေး ရတယ် ($'+parseFloat(j.price).toFixed(0)+')');}).catch(function(){results.push('❌ ရွှေဈေး မရဘူး');});
+      .then(function(r){return r.json();}).then(function(j){results[1]='✅ ရွှေဈေး ရတယ် ($'+parseFloat(j.price).toFixed(0)+')';}).catch(function(){results[1]='❌ ရွှေဈေး မရဘူး';});
     var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
     var p3;
-    if(!ptoken){results.push('⚠️ Token မရှိဘူး');p3=Promise.resolve();}
+    if(!ptoken){results[2]='⚠️ Token မရှိဘူး';p3=Promise.resolve();}
     else{
       p3=fetchTimeout('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:'openai/gpt-5.4-nano',max_tokens:20,messages:[{role:'user',content:'Hi'}]})},12000)
-      .then(function(r){if(!r.ok)throw new Error('tok '+r.status);return r.json();}).then(function(){results.push('✅ Token မှန်တယ်, အခမဲ့ AI ရတယ်');}).catch(function(e){results.push('❌ Token နဲ့ AI မရဘူး ('+(e.message||'')+')');});
+      .then(function(r){if(!r.ok)throw new Error('tok '+r.status);return r.json();}).then(function(){results[2]='✅ Token မှန်တယ်, အခမဲ့ AI ရတယ်';}).catch(function(e){results[2]='❌ Token နဲ့ AI မရဘူး ('+(e.message||'')+')';});
     }
     var p4=new Promise(function(res){
       var a=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&tl=my&client=tw-ob&q='+encodeURIComponent('မင်္ဂလာပါ'));
       var done=false;
-      a.oncanplay=function(){if(!done){done=true;results.push('✅ Google အသံ ရတယ်');res();}};
-      a.onerror=function(){if(!done){done=true;results.push('❌ Google အသံ မရဘူး');res();}};
-      try{var pr=a.play();if(pr&&pr.catch)pr.catch(function(){if(!done){done=true;results.push('❌ Google အသံ ဖွင့်မရဘူး');res();}});}catch(e){if(!done){done=true;results.push('❌ Google အသံ မရဘူး');res();}}
-      setTimeout(function(){if(!done){done=true;results.push('❌ Google အသံ အချိန်ကုန်ပြီ');res();}},8000);
+      a.oncanplay=function(){if(!done){done=true;results[3]='✅ Google အသံ ရတယ်';res();}};
+      a.onerror=function(){if(!done){done=true;results[3]='❌ Google အသံ မရဘူး';res();}};
+      try{var pr=a.play();if(pr&&pr.catch)pr.catch(function(){if(!done){done=true;results[3]='❌ Google အသံ ဖွင့်မရဘူး';res();}});}catch(e){if(!done){done=true;results[3]='❌ Google အသံ မရဘူး';res();}}
+      setTimeout(function(){if(!done){done=true;results[3]='❌ Google အသံ အချိန်ကုန်ပြီ';res();}},8000);
     });
     var stt=(window.SpeechRecognition||window.webkitSpeechRecognition)?'✅ Chrome အသံနားထောင်စနစ် ရှိတယ်':'❌ Chrome အသံနားထောင်စနစ် မရှိဘူး';
     Promise.all([p1,p2,p3,p4]).then(function(){
