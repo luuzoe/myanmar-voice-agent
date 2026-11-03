@@ -70,13 +70,13 @@ ul.dlist li{margin:2px 0}
 <div class="htitle"><h1>🎙️ Zoe Lay AI Agent</h1></div>
 <div class="hspacer"></div>
 </div>
-<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V7.0</p>
+<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V8.0</p>
 </header>
 <div id="overlay"></div>
 <aside id="drawer">
 <div class="dhead">
 <div class="davatar">🎙️</div>
-<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V7.0</p></div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V8.0</p></div>
 <button id="closeDrawer">✕</button>
 </div>
 <section class="dsec">
@@ -108,6 +108,7 @@ ul.dlist li{margin:2px 0}
 <div id="miclabel">မိုက်ခရိုဖုန်းနှိပ်ပြီး ပြောပါ</div>
 <button id="recBtn" style="margin-top:8px;padding:8px 14px;border-radius:999px;border:1px solid #fdba74;background:#ffedd5;font-size:13px">🎙️ အသံဖမ်းပြီး ပို့</button>
 <div id="recLabel" style="font-size:13px;color:#57534e;margin-top:6px"></div>
+<button id="diagBtn" style="margin-top:8px;padding:8px 14px;border-radius:999px;border:1px solid #d6d3d1;background:#fff;font-size:13px">🔍 ဘာပျက်နေလဲ စစ်မယ်</button>
 </div>
 <div class="chips">
 <button data-q="အခုအချိန်ဘယ်လောက်ရှိပြီလဲ">🕐 အချိန်</button>
@@ -398,7 +399,15 @@ function askBrain(q){
     }
     var mmsgs=[{role:'system',content:sys}];history.slice(-6).forEach(function(h){mmsgs.push(h)});mmsgs.push({role:'user',content:q});
     return fetchTimeout('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:({fastfree:'openai/gpt-5.4-nano',gpt55:'openai/gpt-5.5',deepseek:'deepseek/deepseek-v4.1-flash',qwen:'qwen/qwen3.8-2.4t-a95b',llama:'meta/llama-3.3-70b-instruct',mistral:'mistralai/mistral-large-3',grok:'x-ai/grok-4.3',kimi:'moonshotai/kimi-k2.6',musefree:'community/vendouple/muse-glimmer-30b:free'}[providerSel.value]||'openai/gpt-5.4-nano'),max_tokens:600,messages:mmsgs})})
-    .then(function(r){if(!r.ok)throw new Error('freebrain '+r.status);return r.json()})
+    .then(function(r){
+      if(!r.ok){
+        var e3=new Error('freebrain '+r.status);
+        if(r.status===401)e3.userMessage='Token မမှန်ဘူး — key ကို ပြန်စစ်ပြီး 💾 သိမ်း နှိပ်ပါ။';
+        else if(r.status===402||r.status===403)e3.userMessage='Pollen ကုန်နေပြီ၊ ဒါမှမဟုတ် ဒီ model က paid ဖြစ်နေတယ် — တခြား အခမဲ့ AI ကို ပြောင်းကြည့်ပါ။';
+        throw e3;
+      }
+      return r.json();
+    })
     .then(function(j){
       var t='';try{t=(j.choices[0].message.content||'').trim();}catch(e){}
       if(!t)throw new Error('empty');
@@ -556,6 +565,42 @@ recBtn.onclick=function(){
     };
     mediaRec.start();
   }).catch(function(){addMsg('ai','မိုက်ခရိုဖုန်း ခွင့်မပြုသေးဘူး — Allow လုပ်ပေးပါ။');});
+};
+}
+
+// ---------- One-tap diagnostic ----------
+var diagBtn=document.getElementById('diagBtn');
+if(diagBtn){
+diagBtn.onclick=function(){
+  var th=addMsg('ai','စစ်နေသည်…');
+  var results=[];
+  function run(){
+    var p1=fetchTimeout('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:[{role:'user',content:'Hi'}]})},10000)
+      .then(function(r){return r.text();}).then(function(){results.push('✅ အခမဲ့ AI (Pollinations) ရတယ်');}).catch(function(){results.push('❌ အခမဲ့ AI မရဘူး');});
+    var p2=fetchTimeout('https://data-api.binance.vision/api/v3/ticker/price?symbol=PAXGUSDT',{},10000)
+      .then(function(r){return r.json();}).then(function(j){results.push('✅ ရွှေဈေး ရတယ် ($'+parseFloat(j.price).toFixed(0)+')');}).catch(function(){results.push('❌ ရွှေဈေး မရဘူး');});
+    var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
+    var p3;
+    if(!ptoken){results.push('⚠️ Token မရှိဘူး');p3=Promise.resolve();}
+    else{
+      p3=fetchTimeout('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:'openai/gpt-5.4-nano',max_tokens:20,messages:[{role:'user',content:'Hi'}]})},12000)
+      .then(function(r){if(!r.ok)throw new Error('tok '+r.status);return r.json();}).then(function(){results.push('✅ Token မှန်တယ်, အခမဲ့ AI ရတယ်');}).catch(function(e){results.push('❌ Token နဲ့ AI မရဘူး ('+(e.message||'')+')');});
+    }
+    var p4=new Promise(function(res){
+      var a=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&tl=my&client=tw-ob&q='+encodeURIComponent('မင်္ဂလာပါ'));
+      var done=false;
+      a.oncanplay=function(){if(!done){done=true;results.push('✅ Google အသံ ရတယ်');res();}};
+      a.onerror=function(){if(!done){done=true;results.push('❌ Google အသံ မရဘူး');res();}};
+      try{var pr=a.play();if(pr&&pr.catch)pr.catch(function(){if(!done){done=true;results.push('❌ Google အသံ ဖွင့်မရဘူး');res();}});}catch(e){if(!done){done=true;results.push('❌ Google အသံ မရဘူး');res();}}
+      setTimeout(function(){if(!done){done=true;results.push('❌ Google အသံ အချိန်ကုန်ပြီ');res();}},8000);
+    });
+    var stt=(window.SpeechRecognition||window.webkitSpeechRecognition)?'✅ Chrome အသံနားထောင်စနစ် ရှိတယ်':'❌ Chrome အသံနားထောင်စနစ် မရှိဘူး';
+    Promise.all([p1,p2,p3,p4]).then(function(){
+      var out='စစ်ဆေးချက် ရလဒ်:\n'+results.join('\n')+'\n'+stt+'\nဒီ message ကို screenshot ပို့ပေးပါ။';
+      th.textContent=out;var sm=document.createElement('small');sm.textContent='Zoe Lay';th.appendChild(sm);
+    });
+  }
+  run();
 };
 }
 // ---------- Drawer + Settings ----------
