@@ -70,19 +70,20 @@ ul.dlist li{margin:2px 0}
 <div class="htitle"><h1>🎙️ Zoe Lay AI Agent</h1></div>
 <div class="hspacer"></div>
 </div>
-<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V9.0</p>
+<p>မြန်မာလိုပြော • မြန်မာလိုဖြေ • V10.0</p>
 </header>
 <div id="overlay"></div>
 <aside id="drawer">
 <div class="dhead">
 <div class="davatar">🎙️</div>
-<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V9.0</p></div>
+<div><h2>Zoe Lay</h2><p>မြန်မာ AI Agent • V10.0</p></div>
 <button id="closeDrawer">✕</button>
 </div>
 <section class="dsec">
 <h3>🧠 AI</h3>
-<div class="drow" style="display:block"><span>AI ရွေးပါ</span><select id="providerSel" style="margin-top:8px"><option value="pollinations">Pollinations (အခမဲ့)</option><option value="fastfree">အမြန်ဆုံး AI (အခမဲ့, token လို)</option><option value="gpt55">GPT-5.5 (ပိုထက်တယ်, token လို)</option><option value="deepseek">DeepSeek Flash (token လို)</option><option value="qwen">Qwen (token လို)</option><option value="llama">Llama 70B (token လို)</option><option value="mistral">Mistral Large (token လို)</option><option value="grok">Grok (token လို)</option><option value="kimi">Kimi (token လို)</option><option value="musefree">Muse အခမဲ့ (Pollinations token လို)</option><option value="claude">Muse / Claude (ဝယ်ရတဲ့ key)</option></select></div>
+<div class="drow" style="display:block"><span>AI ရွေးပါ</span><select id="providerSel" style="margin-top:8px"><option value="pollinations">Pollinations (အခမဲ့)</option><option value="fastfree">အမြန်ဆုံး AI (အခမဲ့, token လို)</option><option value="gpt55">GPT-5.5 (ပိုထက်တယ်, token လို)</option><option value="deepseek">DeepSeek Flash (token လို)</option><option value="qwen">Qwen (token လို)</option><option value="llama">Llama 70B (token လို)</option><option value="mistral">Mistral Large (token လို)</option><option value="grok">Grok (token လို)</option><option value="kimi">Kimi (token လို)</option><option value="doubao">Doubao / Seed (BytePlus, အခမဲ့ token လို)</option><option value="musefree">Muse အခမဲ့ (Pollinations token လို)</option><option value="claude">Muse / Claude (ဝယ်ရတဲ့ key)</option></select></div>
 <div class="drow" style="display:block" id="pollTokenRow"><span>Pollinations Token (အခမဲ့, ဖုန်းထဲမှာပဲ သိမ်းမယ်)</span><input id="pollTokenEl" type="password" placeholder="enter.pollinations.ai က key" style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"><br><small>card မလိုဘူး — enter.pollinations.ai မှာ အခမဲ့ အကောင့်ဖွင့်ပြီး key ယူပါ။</small><br><button id="saveTokenBtn" class="dbtn" style="margin-top:8px">💾 သိမ်း</button> <small id="pollSaved"></small></div>
+<div class="drow" style="display:block" id="byteplusKeyRow"><span>BytePlus API Key (ဖုန်းထဲမှာပဲ သိမ်းမယ်)</span><input id="byteplusKeyEl" type="password" placeholder="ai.byteplus.com/ark က key" style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"><br><small>အခမဲ့ token 500,000 — ai.byteplus.com/ark မှာ အကောင့်ဖွင့်ပြီး key ယူပါ။</small><br><button id="saveByteplusBtn" class="dbtn" style="margin-top:8px">💾 သိမ်း</button> <small id="byteplusSaved"></small></div>
 <div class="drow" style="display:block" id="claudeKeyRow"><span>Claude API Key</span><input id="claudeKey" type="password" placeholder="sk-ant-..." style="width:100%;padding:10px;border:1px solid #d6d3d1;border-radius:11px;margin-top:8px"></div>
 </section>
 <section class="dsec">
@@ -138,10 +139,12 @@ var voiceRate=1;
 var savedVoice='';
 var providerSel=document.getElementById('providerSel');
 var pollTokenEl=document.getElementById('pollTokenEl');
+var byteplusKeyEl=document.getElementById('byteplusKeyEl');
+var byteplusKeyRow=document.getElementById('byteplusKeyRow');
 var pollTokenRow=document.getElementById('pollTokenRow');
 var claudeKeyEl=document.getElementById('claudeKey');
 var claudeKeyRow=document.getElementById('claudeKeyRow');
-function updateKeyRow(){if(claudeKeyRow)claudeKeyRow.style.display=(providerSel.value==='claude')?'block':'none';var freeProvs=['musefree','fastfree','gpt55','deepseek','qwen','llama','mistral','grok','kimi'];if(pollTokenRow)pollTokenRow.style.display=(freeProvs.indexOf(providerSel.value)>=0)?'block':'none';}
+function updateKeyRow(){if(claudeKeyRow)claudeKeyRow.style.display=(providerSel.value==='claude')?'block':'none';if(byteplusKeyRow)byteplusKeyRow.style.display=(providerSel.value==='doubao')?'block':'none';var freeProvs=['musefree','fastfree','gpt55','deepseek','qwen','llama','mistral','grok','kimi'];if(pollTokenRow)pollTokenRow.style.display=(freeProvs.indexOf(providerSel.value)>=0)?'block':'none';}
 try{
   var _s=JSON.parse(localStorage.getItem('zoelay_settings')||'{}');
   if(_s.auto!==undefined)autoSpeak.checked=_s.auto;
@@ -152,12 +155,14 @@ try{
   if(_s.provider)providerSel.value=_s.provider;
   var _k=localStorage.getItem('zoelay_claude_key')||'';if(_k)claudeKeyEl.value=_k;
   var _pt=localStorage.getItem('zoelay_poll_token')||'';if(_pt&&pollTokenEl)pollTokenEl.value=_pt;
+  var _bp=localStorage.getItem('zoelay_byteplus_key')||'';if(_bp&&byteplusKeyEl)byteplusKeyEl.value=_bp;
 }catch(e){}
 updateKeyRow();
 function saveSettings(){
   try{localStorage.setItem('zoelay_settings',JSON.stringify({auto:autoSpeak.checked,hands:handsfree.checked,rate:voiceRate,font:fontSel.value,voice:voiceSel.value,provider:providerSel.value}))}catch(e){}
   try{localStorage.setItem('zoelay_claude_key',claudeKeyEl.value.trim())}catch(e){}
   try{if(pollTokenEl)localStorage.setItem('zoelay_poll_token',pollTokenEl.value.trim())}catch(e){}
+  try{if(byteplusKeyEl)localStorage.setItem('zoelay_byteplus_key',byteplusKeyEl.value.trim())}catch(e){}
 }
 var history=[];
 var notes=[];
@@ -394,6 +399,31 @@ function fetchTimeout(url,opts,ms){
 
 function askBrain(q){
   var sys='You are Zoe Lay, a friendly Burmese AI assistant. Answer ONLY in Burmese (Myanmar script) unless the user asks in another language. Keep answers voice-friendly and concise: usually 2-4 short sentences, longer only for explanations. If you do not know something, or it needs live prices, live news or live scores, say clearly that you do not have live data and do not invent numbers, dates or results.';
+  if(providerSel.value==='doubao'){
+    var bkey=(byteplusKeyEl&&byteplusKeyEl.value||'').trim();
+    if(!bkey){
+      var e4=new Error('no-byteplus-key');
+      e4.userMessage='Doubao / Seed ကို သုံးဖို့ BytePlus API key လိုတယ် — ai.byteplus.com/ark မှာ အကောင့်ဖွင့်, API key ထုတ်ပြီး ☰ Menu > AI ထဲမှာ ထည့်ပါ။ အခမဲ့ token 500,000 ရှိတယ်။';
+      return Promise.reject(e4);
+    }
+    var bmsgs=[{role:'system',content:sys}];history.slice(-6).forEach(function(h){bmsgs.push(h)});bmsgs.push({role:'user',content:q});
+    return fetchTimeout('https://ark.ap-southeast.bytepluses.com/api/v3/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+bkey},body:JSON.stringify({model:'dola-seed-2-1-turbo-260628',max_tokens:600,messages:bmsgs})},25000)
+    .then(function(r){
+      if(!r.ok){
+        var e5=new Error('doubao '+r.status);
+        if(r.status===401)e5.userMessage='BytePlus key မမှန်ဘူး — key ကို ပြန်စစ်ပြီး 💾 သိမ်း နှိပ်ပါ။';
+        else if(r.status===402||r.status===403)e5.userMessage='BytePlus အခမဲ့ token ကုန်နေပြီ၊ ဒါမှမဟုတ် ဒီ model က အခမဲ့ထဲမှာ မပါဘူး — တခြား AI ကို ပြောင်းကြည့်ပါ။';
+        else if(r.status===404)e5.userMessage='Doubao model ID မတွေ့ဘူး — ဒီ error ကို screenshot ပို့ပေးပါ, model ကို ပြောင်းပေးမယ်။';
+        throw e5;
+      }
+      return r.json();
+    })
+    .then(function(j){
+      var t='';try{t=(j.choices[0].message.content||'').trim();}catch(e){}
+      if(!t)throw new Error('empty');
+      return t;
+    });
+  }
   if(['musefree','fastfree','gpt55','deepseek','qwen','llama','mistral','grok','kimi'].indexOf(providerSel.value)>=0){
     var ptoken=(pollTokenEl&&pollTokenEl.value||'').trim();
     if(!ptoken){
@@ -577,7 +607,7 @@ var diagBtn=document.getElementById('diagBtn');
 if(diagBtn){
 diagBtn.onclick=function(){
   var th=addMsg('ai','စစ်နေသည်…');
-  var results=['','','',''];
+  var results=['','','','',''];
   function run(){
     var p1=fetchTimeout('https://text.pollinations.ai/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'openai',messages:[{role:'user',content:'Hi'}]})},10000)
       .then(function(r){return r.text();}).then(function(){results[0]='✅ အခမဲ့ AI (Pollinations) ရတယ်';}).catch(function(){results[0]='❌ အခမဲ့ AI မရဘူး';});
@@ -590,16 +620,23 @@ diagBtn.onclick=function(){
       p3=fetchTimeout('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+ptoken},body:JSON.stringify({model:'openai/gpt-5.4-nano',max_tokens:20,messages:[{role:'user',content:'Hi'}]})},12000)
       .then(function(r){if(!r.ok)throw new Error('tok '+r.status);return r.json();}).then(function(){results[2]='✅ Token မှန်တယ်, အခမဲ့ AI ရတယ်';}).catch(function(e){results[2]='❌ Token နဲ့ AI မရဘူး ('+(e.message||'')+')';});
     }
+    var bpkey=(byteplusKeyEl&&byteplusKeyEl.value||'').trim();
+    var pb;
+    if(!bpkey){results[3]='⚠️ BytePlus key မရှိဘူး';pb=Promise.resolve();}
+    else{
+      pb=fetchTimeout('https://ark.ap-southeast.bytepluses.com/api/v3/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+bpkey},body:JSON.stringify({model:'dola-seed-2-1-turbo-260628',max_tokens:20,messages:[{role:'user',content:'Hi'}]})},12000)
+      .then(function(r){if(!r.ok)throw new Error('bp '+r.status);return r.json();}).then(function(){results[3]='✅ Doubao / Seed ရတယ်';}).catch(function(e){results[3]='❌ Doubao / Seed မရဘူး ('+(e.message||'')+')';});
+    }
     var p4=new Promise(function(res){
       var a=new Audio('https://translate.google.com/translate_tts?ie=UTF-8&tl=my&client=tw-ob&q='+encodeURIComponent('မင်္ဂလာပါ'));
       var done=false;
-      a.oncanplay=function(){if(!done){done=true;results[3]='✅ Google အသံ ရတယ်';res();}};
-      a.onerror=function(){if(!done){done=true;results[3]='❌ Google အသံ မရဘူး';res();}};
-      try{var pr=a.play();if(pr&&pr.catch)pr.catch(function(){if(!done){done=true;results[3]='❌ Google အသံ ဖွင့်မရဘူး';res();}});}catch(e){if(!done){done=true;results[3]='❌ Google အသံ မရဘူး';res();}}
-      setTimeout(function(){if(!done){done=true;results[3]='❌ Google အသံ အချိန်ကုန်ပြီ';res();}},8000);
+      a.oncanplay=function(){if(!done){done=true;results[4]='✅ Google အသံ ရတယ်';res();}};
+      a.onerror=function(){if(!done){done=true;results[4]='❌ Google အသံ မရဘူး';res();}};
+      try{var pr=a.play();if(pr&&pr.catch)pr.catch(function(){if(!done){done=true;results[4]='❌ Google အသံ ဖွင့်မရဘူး';res();}});}catch(e){if(!done){done=true;results[4]='❌ Google အသံ မရဘူး';res();}}
+      setTimeout(function(){if(!done){done=true;results[4]='❌ Google အသံ အချိန်ကုန်ပြီ';res();}},8000);
     });
     var stt=(window.SpeechRecognition||window.webkitSpeechRecognition)?'✅ Chrome အသံနားထောင်စနစ် ရှိတယ်':'❌ Chrome အသံနားထောင်စနစ် မရှိဘူး';
-    Promise.all([p1,p2,p3,p4]).then(function(){
+    Promise.all([p1,p2,p3,pb,p4]).then(function(){
       var out='စစ်ဆေးချက် ရလဒ်:\n'+results.join('\n')+'\n'+stt+'\nဒီ message ကို screenshot ပို့ပေးပါ။';
       th.textContent=out;var sm=document.createElement('small');sm.textContent='Zoe Lay';th.appendChild(sm);
     });
@@ -617,6 +654,10 @@ autoSpeak.onchange=saveSettings;handsfree.onchange=saveSettings;voiceSel.onchang
 providerSel.onchange=function(){updateKeyRow();saveSettings();};
 claudeKeyEl.onchange=saveSettings;claudeKeyEl.oninput=saveSettings;
 if(pollTokenEl){pollTokenEl.onchange=saveSettings;pollTokenEl.oninput=function(){saveSettings();var el=document.getElementById('pollSaved');if(el)el.textContent='✓ သိမ်းပြီးပြီ';};}
+if(byteplusKeyEl){byteplusKeyEl.onchange=saveSettings;byteplusKeyEl.oninput=function(){saveSettings();var el=document.getElementById('byteplusSaved');if(el)el.textContent='✓ သိမ်းပြီးပြီ';};}
+var saveByteplusBtn=document.getElementById('saveByteplusBtn');
+if(saveByteplusBtn)saveByteplusBtn.onclick=function(){saveSettings();var el=document.getElementById('byteplusSaved');if(el)el.textContent='✓ သိမ်းပြီးပြီ';};
+(function(){var el=document.getElementById('byteplusSaved');if(el&&byteplusKeyEl&&byteplusKeyEl.value)el.textContent='✓ Key ရှိပြီးသား';})();
 var saveTokenBtn=document.getElementById('saveTokenBtn');
 if(saveTokenBtn)saveTokenBtn.onclick=function(){saveSettings();var el=document.getElementById('pollSaved');if(el)el.textContent='✓ သိမ်းပြီးပြီ';};
 (function(){var el=document.getElementById('pollSaved');if(el&&pollTokenEl&&pollTokenEl.value)el.textContent='✓ Token ရှိပြီးသား';})();
